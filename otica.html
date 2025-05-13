@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otica Prime - Parintins</title>
+    <link rel="icon" type="image/png" href="seu-icone.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Estilos Globais */
+        :root {
+            --cor-principal: #390804;
+            --cor-secundaria: #FFFFFF;
+            --cor-texto-claro: #f4f4f4;
+            --cor-texto-escuro: #333333;
+            --cor-borda-sutil: #e0e0e0;
+            --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-secundaria);
+            color: var(--cor-texto-escuro);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        h1, h2, h3 {
+            color: var(--cor-principal);
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        a {
+            color: var(--cor-principal);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        a:hover {
+            opacity: 0.8;
+        }
+
+        button, input[type="submit"] {
+            background-color: var(--cor-principal);
+            color: var(--cor-secundaria);
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: #521b17; /* Um tom mais escuro da cor principal */
+            transform: translateY(-2px);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--cor-principal);
+            color: var(--cor-secundaria);
+            padding: 1rem 0;
+            box-shadow: var(--sombra-padrao);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--cor-secundaria);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            color: var(--cor-secundaria);
+            font-weight: 600;
+            padding: 8px 0;
+            position: relative;
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--cor-secundaria);
+            transition: width 0.3s ease;
+        }
+        nav ul li a:hover::after,
+        nav ul li a.active::after {
+            width: 100%;
+        }
+
+
+        /* Seções (Conteúdo Dinâmico) */
+        main {
+            flex-grow: 1;
+        }
+
+        .page-section {
+            padding: 40px 0;
+            min-height: 70vh; /* Para preencher a tela */
+            display: none; /* Ocultar por padrão */
+        }
+        .page-section.active {
+            display: block; /* Mostrar seção ativa */
+        }
+        .page-section:first-of-type { /* Mostra a primeira seção por padrão */
+             /* display: block; */ /* JS vai controlar isso */
+        }
+
+
+        /* Hero Section (Home) */
+        #home {
+            /* Imagem de fundo - substitua pela sua ou use um gradiente mais elaborado */
+            background: linear-gradient(rgba(57, 8, 4, 0.75), rgba(57, 8, 4, 0.85)), url('https://images.unsplash.com/photo-1576091066084-24408a5a8a67?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+            color: var(--cor-secundaria);
+            padding: 100px 20px; /* Aumentar padding */
+            min-height: 80vh; /* Altura maior */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        #home .container { /* Para alinhar o conteúdo dentro da home */
+            max-width: 800px;
+        }
+        #home h1 {
+            font-size: 3.5rem; /* Maior */
+            margin-bottom: 1.5rem;
+            color: var(--cor-secundaria);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para legibilidade */
+        }
+        #home p {
+            font-size: 1.3rem; /* Maior */
+            max-width: 700px;
+            margin: 0 auto 2.5rem auto;
+            line-height: 1.8;
+        }
+        #home button {
+            padding: 15px 35px;
+            font-size: 1.1rem;
+        }
+
+        /* Produtos */
+        #produtos .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background-color: var(--cor-secundaria);
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--sombra-padrao);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-card .content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-card .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--cor-principal);
+            margin-top: auto; /* Empurra o preço para baixo */
+            padding-top: 10px; /* Espaço acima do preço */
+        }
+        .product-card p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        /* Agendamento e Contato */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--cor-principal);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="tel"],
+        .form-group input[type="email"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--cor-principal);
+            box-shadow: 0 0 0 2px rgba(57, 8, 4, 0.2);
+        }
+
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        #availability-message, #contact-message {
+            margin-top: 1rem;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        #contato .contact-info {
+            margin-top: 2rem;
+            padding: 30px;
+            background-color: #fdf6f6; /* Um tom muito claro derivado do principal */
+            border-left: 5px solid var(--cor-principal);
+            border-radius: 0 8px 8px 0;
+        }
+        #contato .contact-info p {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        #contato .contact-info strong {
+            color: var(--cor-principal);
+        }
+        #map-container {
+            margin-top: 2rem;
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--sombra-padrao);
+        }
+        #map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--cor-principal);
+            color: var(--cor-texto-claro);
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: auto; /* Garante que o footer fique no final */
+        }
+        footer p {
+            margin-bottom: 0;
+        }
+
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            header .container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            nav ul {
+                margin-top: 1rem;
+                flex-direction: column;
+                width: 100%;
+            }
+            nav ul li {
+                margin-left: 0;
+                margin-bottom: 0.5rem;
+                width: 100%;
+            }
+            nav ul li a {
+                display: block;
+                padding: 10px;
+                text-align: left;
+                background-color: rgba(255,255,255,0.05);
+                border-radius: 4px;
+            }
+            nav ul li a::after { display: none; } /* Remove sublinhado em mobile nav */
+
+
+            #home h1 { font-size: 2.5rem; }
+            #home p { font-size: 1rem; }
+
+            .page-section { padding: 30px 0; }
+
+            #produtos .product-grid {
+                grid-template-columns: 1fr; /* Uma coluna em telas menores */
+            }
+        }
+        /* Spinner de carregamento */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--cor-principal);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <a href="#home" class="logo nav-link">Otica Prime</a>
+            <nav>
+                <ul>
+                    <li><a href="#home" class="nav-link active">Início</a></li>
+                    <li><a href="#produtos" class="nav-link">Produtos</a></li>
+                    <li><a href="#agendamento" class="nav-link">Agendamento</a></li>
+                    <li><a href="#contato" class="nav-link">Contato</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="page-section active">
+            <div class="container">
+                <h1>Bem-vindo à Otica Prime</h1>
+                <p>Sua visão em primeiro lugar, com estilo e qualidade em Parintins.</p>
+                <button onclick="navigateToSection('#produtos')">Ver Produtos</button>
+            </div>
+        </section>
+
+        <section id="produtos" class="page-section">
+            <div class="container">
+                <h2>Nossos Produtos</h2>
+                <div id="product-grid-loader" class="loader"></div>
+                <div id="product-grid" class="product-grid">
+                    <!-- Produtos do Firebase serão inseridos aqui -->
+                </div>
+            </div>
+        </section>
+
+        <section id="agendamento" class="page-section">
+            <div class="container">
+                <h2>Agende sua Consulta</h2>
+                <p>Verifique os horários disponíveis e agende sua consulta ou exame de vista conosco.</p>
+                <p><strong>Horário de Funcionamento:</strong> Segunda a Sexta: 08:00 - 12:00 e 14:00 - 18:00. Sábado: 08:00 - 12:00.</p>
+                
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo:</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contatoTel">Telefone/WhatsApp (com DDD):</label>
+                        <input type="tel" id="contatoTel" name="contatoTel" pattern="[0-9]{10,11}" placeholder="Ex: 92999998888" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="data">Data da Consulta:</label>
+                        <input type="date" id="data" name="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hora">Horário:</label>
+                        <input type="time" id="hora" name="hora" required min="08:00" max="18:00" step="1800">
+                        <small>Intervalos de 30 minutos. Verifique o horário de funcionamento.</small>
+                    </div>
+                    <button type="submit">Verificar Disponibilidade e Agendar</button>
+                </form>
+                <div id="availability-message"></div>
+            </div>
+        </section>
+
+        <section id="contato" class="page-section">
+            <div class="container">
+                <h2>Entre em Contato</h2>
+                <p>Estamos localizados no coração de Parintins, prontos para atender você!</p>
+                <div class="contact-info" id="contact-info-details">
+                    <!-- Informações de contato serão carregadas aqui pelo JS -->
+                    <div class="loader" id="contact-loader"></div>
+                </div>
+                <div id="map-container">
+                    <!-- Mapa será carregado aqui pelo JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© <span id="currentYear"></span> Otica Prime - Parintins. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // --- INÍCIO DO JAVASCRIPT ---
+
+        // 1. CONFIGURAÇÃO DO FIREBASE (SUBSTITUA PELAS SUAS CREDENCIAIS)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeWFdLJ1XbaPn-ElJ6Jhq4LpQqpHSyeLs",
+            authDomain: "for-helpers-2ab8e.firebaseapp.com",
+            databaseURL: "https://for-helpers-2ab8e-default-rtdb.firebaseio.com",
+            projectId: "for-helpers-2ab8e",
+            storageBucket: "for-helpers-2ab8e.firebasestorage.app",
+            messagingSenderId: "518178501674",
+            appId: "1:518178501674:web:f8a1b2de2826b303d6ff53",
+            measurementId: "G-98279NTZPJ"
+        };
+
+        // Inicializar Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // --- INFORMAÇÕES DE CONTATO ---
+        const contactInfoDetails = document.getElementById('contact-info-details');
+        const contactLoader = document.getElementById('contact-loader');
+        const mapContainer = document.getElementById('map-container');
+
+        function loadContactInfo() {
+            if (!contactInfoDetails) return;
+            if(contactLoader) contactLoader.style.display = 'block';
+
+            db.ref('informacoesContato').once('value')
+                .then(snapshot => {
+                    if(contactLoader) contactLoader.style.display = 'none';
+                    if (snapshot.exists()) {
+                        const info = snapshot.val();
+                        contactInfoDetails.innerHTML = `
+                            <p><strong>Endereço:</strong> ${info.endereco || 'Não informado'}</p>
+                            <p><strong>Telefone/WhatsApp:</strong> ${info.telefone || 'Não informado'}</p>
+                            <p><strong>Email:</strong> <a href="mailto:${info.email}">${info.email || 'Não informado'}</a></p>
+                            <p><strong>Horário de Funcionamento:</strong><br>
+                                Segunda a Sexta: ${info.horarioSegSex || 'Não informado'}<br>
+                                Sábado: ${info.horarioSab || 'Não informado'}
+                            </p>
+                        `;
+                        if (info.mapaUrl && mapContainer) {
+                            mapContainer.innerHTML = `<iframe src="${info.mapaUrl}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+                        } else if (mapContainer) {
+                            mapContainer.innerHTML = '<p>Mapa não disponível.</p>';
+                        }
+                    } else {
+                        contactInfoDetails.innerHTML = '<p>Informações de contato não disponíveis.</p>';
+                         if (mapContainer) mapContainer.innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    if(contactLoader) contactLoader.style.display = 'none';
+                    console.error("Erro ao carregar informações de contato: ", error);
+                    contactInfoDetails.innerHTML = '<p>Erro ao carregar informações. Tente novamente mais tarde.</p>';
+                    if (mapContainer) mapContainer.innerHTML = '';
+                });
+        }
+
+        // --- NAVEGAÇÃO SPA (Single Page Application) ---
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageSections = document.querySelectorAll('.page-section');
+
+        function navigateToSection(hash) {
+            if (!hash || hash === '#') hash = '#home'; // Default para home
+
+            pageSections.forEach(section => {
+                if ('#' + section.id === hash) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            window.location.hash = hash; // Atualiza a URL
+            window.scrollTo(0,0); // Rola para o topo da página
+        }
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                navigateToSection(targetId);
+            });
+        });
+
+        // Navegação inicial baseada no hash da URL ou default para #home
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialHash = window.location.hash || '#home';
+            navigateToSection(initialHash);
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Carregar dados dinâmicos quando a respectiva seção for visível pela primeira vez
+            // ou se for a seção inicial.
+            if (initialHash === '#produtos') loadProducts();
+            if (initialHash === '#contato') loadContactInfo();
+
+            // Adicionar observadores para carregar dados quando a seção se torna ativa
+            // Isso é útil se o usuário navegar diretamente para uma seção sem ser a inicial
+            const observer = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const targetSection = mutation.target;
+                        if (targetSection.classList.contains('active')) {
+                            if (targetSection.id === 'produtos' && !document.getElementById('product-grid').hasChildNodes() && productGrid.innerHTML.trim() === '') {
+                                loadProducts();
+                            } else if (targetSection.id === 'contato' && contactInfoDetails.innerHTML.includes('loader')) {
+                                loadContactInfo();
+                            }
+                        }
+                    }
+                }
+            });
+            pageSections.forEach(section => {
+                observer.observe(section, { attributes: true });
+            });
+        });
+
+
+        // --- PRODUTOS ---
+        const productGrid = document.getElementById('product-grid');
+        const productLoader = document.getElementById('product-grid-loader');
+
+        function loadProducts() {
+            if (!productGrid) return; // Se não estiver na página de produtos
+            productLoader.style.display = 'block';
+            productGrid.innerHTML = ''; // Limpa grid atual
+
+            db.ref('produtos').once('value')
+                .then(snapshot => {
+                    productLoader.style.display = 'none';
+                    if (snapshot.exists()) {
+                        const products = snapshot.val();
+                        for (const key in products) {
+                            const product = products[key];
+                            const productCard = `
+                                <div class="product-card">
+                                    <img src="${product.imagemUrl || 'https://via.placeholder.com/300x200/e0e0e0/666666?text=Sem+Imagem'}" alt="${product.nome}">
+                                    <div class="content">
+                                        <h3>${product.nome}</h3>
+                                        <p>${product.descricao}</p>
+                                        <div class="price">R$ ${parseFloat(product.preco).toFixed(2).replace('.',',')}</div>
+                                    </div>
+                                </div>
+                            `;
+                            productGrid.innerHTML += productCard;
+                        }
+                    } else {
+                        productGrid.innerHTML = '<p>Nenhum produto encontrado.</p>';
+                    }
+                })
+                .catch(error => {
+                    productLoader.style.display = 'none';
+                    console.error("Erro ao carregar produtos: ", error);
+                    productGrid.innerHTML = '<p>Erro ao carregar produtos. Tente novamente mais tarde.</p>';
+                });
+        }
+        
+        // --- AGENDAMENTO ---
+        const appointmentForm = document.getElementById('appointmentForm');
+        const availabilityMessage = document.getElementById('availability-message');
+
+        const horariosFuncionamento = {
+            semana: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "14:00", fimTarde: "18:00" },
+            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" } // Tarde "inválida" para simplificar
+        };
+
+        function isValidTime(date, time) {
+            const dayOfWeek = new Date(date + 'T00:00:00').getDay(); // 0 (Dom) - 6 (Sab) - ajuste de fuso
+            const [hour, minute] = time.split(':').map(Number);
+
+            let operatingHours;
+            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos Domingos." }; // Domingo
+            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado; // Sábado
+            else operatingHours = horariosFuncionamento.semana; // Segunda a Sexta
+
+            const selectedTime = hour * 60 + minute;
+            const inicioManha = timeToMinutes(operatingHours.inicioManha);
+            const fimManha = timeToMinutes(operatingHours.fimManha);
+            const inicioTarde = timeToMinutes(operatingHours.inicioTarde);
+            const fimTarde = timeToMinutes(operatingHours.fimTarde);
+
+            const isInMorningShift = selectedTime >= inicioManha && selectedTime < fimManha;
+            const isInAfternoonShift = selectedTime >= inicioTarde && selectedTime < fimTarde;
+            
+            if (!(isInMorningShift || isInAfternoonShift)) {
+                 return { valid: false, message: `Horário fora do funcionamento. Funcionamos de ${operatingHours.inicioManha}-${operatingHours.fimManha} e ${operatingHours.inicioTarde}-${operatingHours.fimTarde} (${dayOfWeek === 6 ? 'Sábado' : 'Seg-Sex'}).` };
+            }
+            // Verificar se o horário é "quebrado" (ex: 08:15 quando step é 30 min)
+            if (minute % 30 !== 0) {
+                return { valid: false, message: "Por favor, escolha horários cheios ou de meia em meia hora (ex: 08:00, 08:30)." };
+            }
+
+            return { valid: true };
+        }
+
+        function timeToMinutes(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+
+        if (appointmentForm) {
+            appointmentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                showMessage('', ''); // Limpa mensagens anteriores
+
+                const nome = document.getElementById('nome').value;
+                const contatoTel = document.getElementById('contatoTel').value;
+                const data = document.getElementById('data').value;
+                const hora = document.getElementById('hora').value;
+
+                // Validação de data futura
+                const hoje = new Date();
+                hoje.setHours(0,0,0,0); // Zera horas para comparar só data
+                const dataSelecionada = new Date(data + "T00:00:00"); // Adiciona T00:00:00 para evitar problemas de fuso na conversão para Date
+
+                if (dataSelecionada < hoje) {
+                    showMessage('Por favor, selecione uma data futura.', 'error');
+                    return;
+                }
+
+                // Validação de horário de funcionamento
+                const timeValidation = isValidTime(data, hora);
+                if (!timeValidation.valid) {
+                    showMessage(timeValidation.message, 'error');
+                    return;
+                }
+
+                const dataHoraCombinada = `${data}T${hora}`;
+
+                // Verificar disponibilidade no Firebase
+                db.ref('agendamentos')
+                  .orderByChild('data_hora_combinada')
+                  .equalTo(dataHoraCombinada)
+                  .once('value')
+                  .then(snapshot => {
+                      if (snapshot.exists()) {
+                          showMessage('Este horário já está agendado. Por favor, escolha outro.', 'error');
+                      } else {
+                          // Horário disponível, salvar agendamento
+                          const novoAgendamento = {
+                              nome: nome,
+                              contato: contatoTel,
+                              data: data,
+                              hora: hora,
+                              data_hora_combinada: dataHoraCombinada,
+                              timestamp: firebase.database.ServerValue.TIMESTAMP
+                          };
+
+                          db.ref('agendamentos').push(novoAgendamento)
+                              .then(() => {
+                                  showMessage('Agendamento realizado com sucesso! Entraremos em contato para confirmar.', 'success');
+                                  appointmentForm.reset();
+                              })
+                              .catch(error => {
+                                  console.error("Erro ao salvar agendamento: ", error);
+                                  showMessage('Erro ao realizar agendamento. Tente novamente.', 'error');
+                              });
+                      }
+                  })
+                  .catch(error => {
+                      console.error("Erro ao verificar disponibilidade: ", error);
+                      showMessage('Erro ao verificar disponibilidade. Tente novamente.', 'error');
+                  });
+            });
+        }
+        
+        function showMessage(message, type) {
+            if (availabilityMessage) {
+                availabilityMessage.textContent = message;
+                availabilityMessage.className = type; // 'success' ou 'error'
+                availabilityMessage.style.display = message ? 'block' : 'none';
+            }
+        }
+
+
+        // --- INICIALIZAÇÃO GERAL ---
+        // Adicionado ao DOMContentLoaded para garantir que os elementos existam.
+        
+        // --- FIM DO JAVASCRIPT ---
+    </script>
+</body>
+</html>

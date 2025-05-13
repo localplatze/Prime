@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Otica Prime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-principal: #390804;
+            --cor-secundaria: #FFFFFF;
+            --cor-texto-claro: #f4f4f4;
+            --cor-texto-escuro: #333333;
+            --cor-borda-sutil: #e0e0e0;
+            --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --cor-sucesso: #28a745;
+            --cor-erro: #dc3545;
+            --cor-aviso: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f2f5; /* Fundo diferente para admin */
+            color: var(--cor-texto-escuro);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--cor-secundaria);
+            border-radius: 8px;
+            box-shadow: var(--sombra-padrao);
+        }
+
+        h1, h2, h3 {
+            color: var(--cor-principal);
+            margin-bottom: 1rem;
+        }
+        h1 { font-size: 2rem; text-align: center; }
+        h2 { font-size: 1.5rem; border-bottom: 2px solid var(--cor-principal); padding-bottom: 0.5rem; margin-top: 1.5rem;}
+        h3 { font-size: 1.2rem; }
+
+        button, input[type="submit"] {
+            background-color: var(--cor-principal);
+            color: var(--cor-secundaria);
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+        }
+        button:hover, input[type="submit"]:hover {
+            background-color: #521b17;
+        }
+        button.danger { background-color: var(--cor-erro); }
+        button.danger:hover { background-color: #c82333; }
+        button.secondary { background-color: #6c757d; }
+        button.secondary:hover { background-color: #5a6268; }
+
+
+        /* Login Section */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        #login-form-container {
+            background-color: var(--cor-secundaria);
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: var(--sombra-padrao);
+            width: 100%;
+            max-width: 400px;
+        }
+        #login-form-container h1 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Admin Panel */
+        #admin-panel {
+            display: none; /* Oculto por padrão */
+        }
+        #admin-nav {
+            background-color: var(--cor-principal);
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        #admin-nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+        }
+        #admin-nav ul li {
+            margin: 0 15px;
+        }
+        #admin-nav ul li a {
+            color: var(--cor-secundaria);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        #admin-nav ul li a:hover, #admin-nav ul li a.active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .admin-content-section {
+            display: none; /* Oculto por padrão */
+            padding: 20px;
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .admin-content-section.active {
+            display: block;
+        }
+
+        /* Formulários Admin */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group input[type="url"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid var(--cor-borda-sutil);
+            padding: 10px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: var(--cor-principal);
+            font-weight: 600;
+        }
+        td img.product-thumb {
+            max-width: 60px;
+            max-height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        td .actions button {
+            margin-right: 5px;
+            padding: 5px 8px;
+            font-size: 0.8rem;
+        }
+
+        /* Mensagens de Feedback */
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
+        .message.info { background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;}
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--cor-principal);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #logout-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--cor-erro);
+        }
+
+         @media (max-width: 768px) {
+            #admin-nav ul { flex-direction: column; align-items: center; }
+            #admin-nav ul li { margin: 5px 0; width: 80%; text-align: center;}
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #ccc; margin-bottom: 5px; }
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; }
+            td:before { position: absolute; top: 6px; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; content: attr(data-label); font-weight: bold; color: var(--cor-principal); }
+        }
+    </style>
+</head>
+<body>
+    <div id="login-section">
+        <div id="login-form-container">
+            <h1>Admin Otica Prime</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Entrar</button>
+                <div id="login-message" class="message" style="display:none; margin-top:10px;"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="container">
+        <button id="logout-button">Sair</button>
+        <h1>Painel de Administração</h1>
+        <nav id="admin-nav">
+            <ul>
+                <li><a href="#admin-produtos" class="admin-nav-link active">Gerenciar Produtos</a></li>
+                <li><a href="#admin-agendamentos" class="admin-nav-link">Ver Agendamentos</a></li>
+                <li><a href="#admin-contato" class="admin-nav-link">Editar Contato</a></li>
+            </ul>
+        </nav>
+
+        <div id="admin-geral-message" class="message" style="display:none;"></div>
+
+        <!-- Seção Gerenciar Produtos -->
+        <section id="admin-produtos" class="admin-content-section active">
+            <h2>Gerenciar Produtos</h2>
+            <button id="showAddProductFormBtn">Adicionar Novo Produto</button>
+            <form id="productForm" style="display:none; margin-top:15px; padding:15px; border:1px solid #eee; border-radius:5px;">
+                <input type="hidden" id="productId">
+                <h3><span id="formTitle">Adicionar</span> Produto</h3>
+                <div class="form-group">
+                    <label for="productName">Nome:</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label for="productDesc">Descrição:</label>
+                    <textarea id="productDesc" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Preço (ex: 299.90):</label>
+                    <input type="number" step="0.01" id="productPrice" required>
+                </div>
+                <div class="form-group">
+                    <label for="productImageFile">Imagem do Produto:</label>
+                    <input type="file" id="productImageFile" accept="image/*">
+                    <small>Deixe em branco se não quiser alterar a imagem atual (ao editar).</small>
+                    <div id="imagePreviewContainer" style="margin-top:10px;">
+                        <img id="imagePreview" src="#" alt="Prévia da Imagem" style="max-width: 200px; max-height: 200px; display: none;">
+                    </div>
+                    <div id="uploadProgressContainer" style="display:none; margin-top:10px;">
+                        <progress id="uploadProgress" value="0" max="100"></progress>
+                        <span id="uploadProgressText">0%</span>
+                    </div>
+                    <input type="hidden" id="productImageURL"> <!-- Mantemos este para armazenar a URL final -->
+                </div>
+                <button type="submit">Salvar Produto</button>
+                <button type="button" id="cancelEditProductBtn" class="secondary" style="display:none;">Cancelar Edição</button>
+            </form>
+            <div id="productListLoader" class="loader" style="display:none;"></div>
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th>Imagem</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Produtos listados aqui -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Seção Ver Agendamentos -->
+        <section id="admin-agendamentos" class="admin-content-section">
+            <h2>Agendamentos Recebidos</h2>
+            <div id="appointmentsLoader" class="loader" style="display:none;"></div>
+            <table id="appointmentsTable">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Nome</th>
+                        <th>Contato</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Agendamentos listados aqui -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Seção Editar Informações de Contato -->
+        <section id="admin-contato" class="admin-content-section">
+            <h2>Editar Informações de Contato</h2>
+            <form id="contactInfoForm">
+                <div class="form-group">
+                    <label for="contactAddress">Endereço:</label>
+                    <input type="text" id="contactAddress" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactPhone">Telefone/WhatsApp:</label>
+                    <input type="text" id="contactPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Email:</label>
+                    <input type="text" id="contactEmail" required> <!-- type="email" para validação do browser -->
+                </div>
+                <div class="form-group">
+                    <label for="contactHoursWeek">Horário Seg-Sex (ex: 08:00-12:00 e 14:00-18:00):</label>
+                    <input type="text" id="contactHoursWeek" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactHoursSat">Horário Sábado (ex: 08:00-12:00):</label>
+                    <input type="text" id="contactHoursSat" required>
+                </div>
+                 <div class="form-group">
+                    <label for="contactMapURL">URL do Google Maps Embed (iframe src):</label>
+                    <input type="url" id="contactMapURL">
+                </div>
+                <button type="submit">Salvar Informações de Contato</button>
+            </form>
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script>
+        // --- INÍCIO DO JAVASCRIPT ADMIN ---
+
+        // 1. CONFIGURAÇÃO DO FIREBASE (MESMA DA INDEX.HTML)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeWFdLJ1XbaPn-ElJ6Jhq4LpQqpHSyeLs",
+            authDomain: "for-helpers-2ab8e.firebaseapp.com",
+            databaseURL: "https://for-helpers-2ab8e-default-rtdb.firebaseio.com",
+            projectId: "for-helpers-2ab8e",
+            storageBucket: "for-helpers-2ab8e.firebasestorage.app",
+            messagingSenderId: "518178501674",
+            appId: "1:518178501674:web:f8a1b2de2826b303d6ff53",
+            measurementId: "G-98279NTZPJ"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        // --- USUÁRIO E SENHA (HARDCODED - NÃO SEGURO PARA PRODUÇÃO!) ---
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "otica@prime2024"; // TROCAR EM PRODUÇÃO REAL!
+
+        // --- ELEMENTOS DO DOM ---
+        const loginSection = document.getElementById('login-section');
+        const adminPanel = document.getElementById('admin-panel');
+        const loginForm = document.getElementById('loginForm');
+        const loginMessage = document.getElementById('login-message');
+        const logoutButton = document.getElementById('logout-button');
+        const adminNavLinks = document.querySelectorAll('.admin-nav-link');
+        const adminContentSections = document.querySelectorAll('.admin-content-section');
+        const geralMessageDiv = document.getElementById('admin-geral-message');
+
+        // Elementos Produtos
+        const productForm = document.getElementById('productForm');
+        const showAddProductFormBtn = document.getElementById('showAddProductFormBtn');
+        const cancelEditProductBtn = document.getElementById('cancelEditProductBtn');
+        const productIdInput = document.getElementById('productId');
+        const productNameInput = document.getElementById('productName');
+        const productDescInput = document.getElementById('productDesc');
+        const productPriceInput = document.getElementById('productPrice');
+        const productImageURLInput = document.getElementById('productImageURL');
+        const productsTableBody = document.querySelector('#productsTable tbody');
+        const productListLoader = document.getElementById('productListLoader');
+        const formTitle = document.getElementById('formTitle');
+
+        // Elementos Agendamentos
+        const appointmentsTableBody = document.querySelector('#appointmentsTable tbody');
+        const appointmentsLoader = document.getElementById('appointmentsLoader');
+
+        // Elementos Contato
+        const contactInfoForm = document.getElementById('contactInfoForm');
+        const contactAddressInput = document.getElementById('contactAddress');
+        const contactPhoneInput = document.getElementById('contactPhone');
+        const contactEmailInput = document.getElementById('contactEmail');
+        const contactHoursWeekInput = document.getElementById('contactHoursWeek');
+        const contactHoursSatInput = document.getElementById('contactHoursSat');
+        const contactMapURLInput = document.getElementById('contactMapURL');
+
+        const productImageFileInput = document.getElementById('productImageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const uploadProgressText = document.getElementById('uploadProgressText');
+
+        productImageFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+                productImageURLInput.value = ''; // Limpa URL antiga se uma nova imagem for selecionada
+            } else {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '#';
+            }
+        });
+
+        // --- FUNÇÕES DE UTILIDADE ---
+        function showGeralMessage(message, type = 'info') {
+            geralMessageDiv.textContent = message;
+            geralMessageDiv.className = `message ${type}`;
+            geralMessageDiv.style.display = 'block';
+            setTimeout(() => { geralMessageDiv.style.display = 'none'; }, 5000);
+        }
+
+        // --- AUTENTICAÇÃO ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+                console.log('1 ' + username)
+                console.log('2 ' + ADMIN_USER)
+                console.log('3 ' + password)
+                console.log('4 ' + ADMIN_PASS)
+
+            if (username === ADMIN_PASS && password === ADMIN_USER) {
+                loginSection.style.display = 'none';
+                adminPanel.style.display = 'block';
+                sessionStorage.setItem('isAdminLoggedIn', 'true'); // Simples flag de sessão
+                loadProductsAdmin(); // Carrega produtos ao logar
+            } else {
+                loginMessage.textContent = "Usuário ou senha inválidos!";
+                loginMessage.className = 'message error';
+                loginMessage.style.display = 'block';
+            }
+        });
+
+        logoutButton.addEventListener('click', () => {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            loginSection.style.display = 'flex';
+            adminPanel.style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        });
+
+        // Verificar se já está logado (ex: refresh da página)
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            loginSection.style.display = 'none';
+            adminPanel.style.display = 'block';
+            loadProductsAdmin(); // Carrega produtos se já estiver logado
+            // Carregar dados da aba ativa
+            const activeLink = document.querySelector('#admin-nav .active');
+            if (activeLink) navigateAdminSection(activeLink.getAttribute('href'));
+
+        }
+
+        // --- NAVEGAÇÃO NO PAINEL ADMIN ---
+        adminNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                navigateAdminSection(targetId);
+            });
+        });
+
+        function navigateAdminSection(hash) {
+            adminContentSections.forEach(section => {
+                section.classList.toggle('active', '#' + section.id === hash);
+            });
+            adminNavLinks.forEach(navLink => {
+                navLink.classList.toggle('active', navLink.getAttribute('href') === hash);
+            });
+
+            // Carregar dados da seção específica
+            if (hash === '#admin-produtos' && productsTableBody.innerHTML.trim() === '') loadProductsAdmin();
+            if (hash === '#admin-agendamentos' && appointmentsTableBody.innerHTML.trim() === '') loadAppointmentsAdmin();
+            if (hash === '#admin-contato') loadContactInfoAdmin(); // Sempre recarrega ao visitar
+        }
+
+
+        // --- GERENCIAR PRODUTOS ---
+        showAddProductFormBtn.addEventListener('click', () => {
+            resetProductForm(); // Chama a função de reset
+            formTitle.textContent = 'Adicionar';
+            productForm.style.display = 'block';
+            showAddProductFormBtn.style.display = 'none';
+        });
+
+        cancelEditProductBtn.addEventListener('click', () => {
+            resetProductForm(); // Chama a função de reset
+        });
+
+        productForm.addEventListener('submit', async (e) => { // Adicionar async
+            e.preventDefault();
+            const id = productIdInput.value;
+            const file = productImageFileInput.files[0];
+            let imageUrl = productImageURLInput.value; // Pega a URL existente (se estiver editando e não mudou a imagem)
+
+            // Desabilitar botão de submit para evitar cliques duplos
+            const submitButton = productForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+
+            if (file) { // Se um novo arquivo foi selecionado para upload
+                uploadProgressContainer.style.display = 'block';
+                uploadProgress.value = 0;
+                uploadProgressText.textContent = '0%';
+                imagePreview.style.borderColor = 'transparent'; // Reset border
+
+                const timestamp = new Date().getTime();
+                const randomSuffix = Math.random().toString(36).substring(2,8);
+                const fileName = `products/${timestamp}_${randomSuffix}_${file.name}`;
+                const storageRef = storage.ref(fileName);
+                const uploadTask = storageRef.put(file);
+
+                try {
+                    await new Promise((resolve, reject) => {
+                        uploadTask.on('state_changed',
+                            (snapshot) => {
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                uploadProgress.value = progress;
+                                uploadProgressText.textContent = Math.round(progress) + '%';
+                            },
+                            (error) => {
+                                console.error("Erro no upload: ", error);
+                                showGeralMessage('Erro no upload da imagem: ' + error.code, 'error');
+                                imagePreview.style.borderColor = 'var(--cor-erro)';
+                                reject(error);
+                            },
+                            async () => { // Upload completo
+                                imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                                productImageURLInput.value = imageUrl; // Atualiza o campo hidden com a nova URL
+                                console.log('File available at', imageUrl);
+                                resolve();
+                            }
+                        );
+                    });
+                } catch (error) {
+                    // Habilitar botão de submit
+                    submitButton.disabled = false;
+                    submitButton.textContent = id ? 'Salvar Alterações' : 'Salvar Produto';
+                    uploadProgressContainer.style.display = 'none';
+                    return; // Interrompe o salvamento no DB se o upload falhar
+                }
+            }
+
+            // Se não há arquivo E não há URL existente (novo produto sem imagem), não prosseguir.
+            // Ou você pode definir uma imagem padrão.
+            if (!imageUrl && !id) { // Só se for NOVO produto e SEM imagem
+                showGeralMessage('Por favor, selecione uma imagem para o novo produto.', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Salvar Produto';
+                uploadProgressContainer.style.display = 'none';
+                return;
+            }
+
+
+            const productData = {
+                nome: productNameInput.value,
+                descricao: productDescInput.value,
+                preco: productPriceInput.value,
+                imagemUrl: imageUrl // Usa a nova URL do Storage ou a existente
+            };
+
+            const dbOperation = id
+                ? db.ref('produtos/' + id).update(productData) // Editar
+                : db.ref('produtos').push(productData);       // Adicionar novo
+
+            dbOperation
+                .then(() => {
+                    showGeralMessage(id ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
+                    resetProductForm();
+                    loadProductsAdmin();
+                })
+                .catch(err => showGeralMessage('Erro ao salvar produto: ' + err.message, 'error'))
+                .finally(() => {
+                    // Habilitar botão de submit
+                    submitButton.disabled = false;
+                    submitButton.textContent = id ? 'Salvar Alterações' : 'Salvar Produto';
+                    uploadProgressContainer.style.display = 'none';
+                });
+        });
+
+        function resetProductForm() {
+            productForm.reset(); // Reseta os campos do formulário
+            productIdInput.value = '';
+            productImageURLInput.value = ''; // Limpa a URL da imagem oculta
+            imagePreview.style.display = 'none';
+            imagePreview.src = '#';
+            productImageFileInput.value = null; // Limpa o input file
+            uploadProgressContainer.style.display = 'none';
+            uploadProgress.value = 0;
+            uploadProgressText.textContent = '0%';
+            productForm.style.display = 'none';
+            showAddProductFormBtn.style.display = 'block';
+            cancelEditProductBtn.style.display = 'none';
+            formTitle.textContent = 'Adicionar';
+
+            const submitButton = productForm.querySelector('button[type="submit"]');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Salvar Produto';
+        }
+
+        function loadProductsAdmin() {
+            productListLoader.style.display = 'block';
+            productsTableBody.innerHTML = '';
+            db.ref('produtos').once('value')
+                .then(snapshot => {
+                    productListLoader.style.display = 'none';
+                    if (snapshot.exists()) {
+                        snapshot.forEach(childSnapshot => {
+                            const key = childSnapshot.key;
+                            const product = childSnapshot.val();
+                            const row = productsTableBody.insertRow();
+                            row.innerHTML = `
+                                <td data-label="Imagem"><img src="${product.imagemUrl || 'https://via.placeholder.com/60x40?text=N/A'}" alt="${product.nome}" class="product-thumb"></td>
+                                <td data-label="Nome">${product.nome}</td>
+                                <td data-label="Preço">R$ ${parseFloat(product.preco).toFixed(2).replace('.',',')}</td>
+                                <td data-label="Ações" class="actions">
+                                    <button onclick="editProduct('${key}')">Editar</button>
+                                    <button class="danger" onclick="deleteProduct('${key}', '${product.nome}')">Excluir</button>
+                                </td>
+                            `;
+                        });
+                    } else {
+                        productsTableBody.innerHTML = '<tr><td colspan="4">Nenhum produto cadastrado.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    productListLoader.style.display = 'none';
+                    showGeralMessage('Erro ao carregar produtos: ' + err.message, 'error');
+                });
+        }
+
+        window.editProduct = (key) => {
+            db.ref('produtos/' + key).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    const product = snapshot.val();
+                    formTitle.textContent = 'Editar';
+                    productIdInput.value = key;
+                    productNameInput.value = product.nome;
+                    productDescInput.value = product.descricao;
+                    productPriceInput.value = product.preco;
+                    
+                    productImageURLInput.value = product.imagemUrl || ''; // Guarda a URL atual
+                    if (product.imagemUrl) {
+                        imagePreview.src = product.imagemUrl;
+                        imagePreview.style.display = 'block';
+                    } else {
+                        imagePreview.style.display = 'none';
+                        imagePreview.src = '#';
+                    }
+                    productImageFileInput.value = null; // Limpa qualquer seleção de arquivo anterior
+                    uploadProgressContainer.style.display = 'none';
+
+
+                    productForm.style.display = 'block';
+                    showAddProductFormBtn.style.display = 'none';
+                    cancelEditProductBtn.style.display = 'inline-block';
+
+                    const submitButton = productForm.querySelector('button[type="submit"]');
+                    submitButton.textContent = 'Salvar Alterações';
+
+                    window.scrollTo(0, productForm.offsetTop - 20);
+                }
+            });
+        };
+
+        window.deleteProduct = (key, productName) => {
+            if (confirm(`Tem certeza que deseja excluir o produto "${productName}"?`)) {
+                // Primeiro, pegar a URL da imagem do produto no DB
+                db.ref('produtos/' + key).once('value')
+                    .then(snapshot => {
+                        const product = snapshot.val();
+                        const imageUrl = product ? product.imagemUrl : null;
+
+                        // Excluir do Realtime Database
+                        return db.ref('produtos/' + key).remove().then(() => imageUrl); // Passa a URL para o próximo then
+                    })
+                    .then((imageUrl) => {
+                        // Se tinha uma URL de imagem, tentar excluir do Storage
+                        if (imageUrl) {
+                            const imageRef = storage.refFromURL(imageUrl);
+                            return imageRef.delete().catch(error => {
+                                // Não bloquear a exclusão do DB se a exclusão do Storage falhar
+                                console.warn("Erro ao excluir imagem do Storage (pode já ter sido excluída ou não existir): ", error);
+                            });
+                        }
+                    })
+                    .then(() => {
+                        showGeralMessage('Produto excluído com sucesso!', 'success');
+                        loadProductsAdmin();
+                    })
+                    .catch(err => showGeralMessage('Erro ao excluir produto: ' + err.message, 'error'));
+            }
+        };
+
+
+        // --- VER AGENDAMENTOS ---
+        function loadAppointmentsAdmin() {
+            appointmentsLoader.style.display = 'block';
+            appointmentsTableBody.innerHTML = '';
+            // Ordenar por data e hora - pode precisar de índice composto ou fazer no cliente
+            db.ref('agendamentos').orderByChild('data_hora_combinada').once('value')
+                .then(snapshot => {
+                    appointmentsLoader.style.display = 'none';
+                    if (snapshot.exists()) {
+                        let appointments = [];
+                        snapshot.forEach(childSnapshot => {
+                            appointments.push({ key: childSnapshot.key, ...childSnapshot.val() });
+                        });
+                        // Reverter para mostrar os mais recentes primeiro, se desejar.
+                        // appointments.reverse(); 
+
+                        appointments.forEach(app => {
+                            const row = appointmentsTableBody.insertRow();
+                            // Formatar data para dd/mm/yyyy
+                            let formattedDate = app.data;
+                            try {
+                                const dateParts = app.data.split('-'); // yyyy-mm-dd
+                                if(dateParts.length === 3) {
+                                   formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                                }
+                            } catch(e) { console.warn("Erro formatando data do agendamento", e); }
+
+                            row.innerHTML = `
+                                <td data-label="Data">${formattedDate}</td>
+                                <td data-label="Hora">${app.hora}</td>
+                                <td data-label="Nome">${app.nome}</td>
+                                <td data-label="Contato">${app.contato}</td>
+                                <td data-label="Ações" class="actions">
+                                    <button class="danger" onclick="deleteAppointment('${app.key}', '${app.nome} em ${formattedDate} ${app.hora}')">Excluir</button>
+                                    <!-- Poderia adicionar "Confirmar", "Concluir" etc -->
+                                </td>
+                            `;
+                        });
+                    } else {
+                        appointmentsTableBody.innerHTML = '<tr><td colspan="5">Nenhum agendamento encontrado.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    appointmentsLoader.style.display = 'none';
+                    showGeralMessage('Erro ao carregar agendamentos: ' + err.message, 'error');
+                });
+        }
+        
+        window.deleteAppointment = (key, appointmentDetails) => {
+            if (confirm(`Tem certeza que deseja excluir o agendamento de "${appointmentDetails}"?`)) {
+                db.ref('agendamentos/' + key).remove()
+                    .then(() => {
+                        showGeralMessage('Agendamento excluído com sucesso!', 'success');
+                        loadAppointmentsAdmin(); // Recarrega a lista
+                    })
+                    .catch(err => {
+                        showGeralMessage('Erro ao excluir agendamento: ' + err.message, 'error');
+                    });
+            }
+        };
+
+        // --- EDITAR INFORMAÇÕES DE CONTATO ---
+        function loadContactInfoAdmin() {
+            db.ref('informacoesContato').once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const info = snapshot.val();
+                        contactAddressInput.value = info.endereco || '';
+                        contactPhoneInput.value = info.telefone || '';
+                        contactEmailInput.value = info.email || '';
+                        contactHoursWeekInput.value = info.horarioSegSex || '';
+                        contactHoursSatInput.value = info.horarioSab || '';
+                        contactMapURLInput.value = info.mapaUrl || '';
+                    }
+                })
+                .catch(err => showGeralMessage('Erro ao carregar informações de contato: ' + err.message, 'error'));
+        }
+
+        contactInfoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const contactData = {
+                endereco: contactAddressInput.value,
+                telefone: contactPhoneInput.value,
+                email: contactEmailInput.value,
+                horarioSegSex: contactHoursWeekInput.value,
+                horarioSab: contactHoursSatInput.value,
+                mapaUrl: contactMapURLInput.value
+            };
+
+            db.ref('informacoesContato').set(contactData) // .set() substitui tudo no nó
+                .then(() => showGeralMessage('Informações de contato atualizadas com sucesso!', 'success'))
+                .catch(err => showGeralMessage('Erro ao atualizar informações: ' + err.message, 'error'));
+        });
+
+        // Carregar dados da primeira aba visível (Produtos) se logado no refresh
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            const activeAdminSection = document.querySelector('.admin-content-section.active');
+            if (activeAdminSection) {
+                 navigateAdminSection('#' + activeAdminSection.id);
+            } else {
+                 navigateAdminSection('#admin-produtos'); // Default
+            }
+        }
+
+
+    </script>
+</body>
+</html>
