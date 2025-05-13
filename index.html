@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Otica Prime - Parintins</title>
-    <link rel="icon" type="image/png" href="seu-icone.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="seu-icone.png"> <!-- Certifique-se que este ícone existe ou remova -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Reset e Estilos Globais */
         :root {
@@ -15,6 +15,8 @@
             --cor-texto-escuro: #333333;
             --cor-borda-sutil: #e0e0e0;
             --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --sombra-hover-leve: 0 6px 15px rgba(0, 0, 0, 0.12);
+            --sombra-botao-hover: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         * {
@@ -76,112 +78,161 @@
             padding: 12px 25px;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button:not(.hamburger-menu):hover, input[type="submit"]:hover { /* Evita aplicar ao hamburger */
+            background-color: #521b17;
+            transform: translateY(-2px);
+            box-shadow: var(--sombra-botao-hover);
         }
 
-        button:hover, input[type="submit"]:hover {
-            background-color: #521b17; /* Um tom mais escuro da cor principal */
-            transform: translateY(-2px);
-        }
 
         /* Header */
         header {
             background-color: var(--cor-principal);
             color: var(--cor-secundaria);
-            padding: 1rem 0;
+            padding: 0.8rem 0;
             box-shadow: var(--sombra-padrao);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 1000; /* Abaixo da sidebar e overlay */
         }
 
         header .container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
 
         header .logo {
             font-size: 1.8rem;
             font-weight: 700;
             color: var(--cor-secundaria);
+            z-index: 1102; /* Para ficar acima da sidebar caso o logo seja grande */
         }
 
-        nav ul {
+        .hamburger-menu {
+            display: none;
+            background: none;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1101;
+        }
+        .hamburger-menu span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: var(--cor-secundaria);
+            margin: 5px 0;
+            border-radius: 3px;
+            transition: all 0.3s ease-in-out;
+        }
+        .hamburger-menu.active span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-menu.active span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1090;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        nav#main-nav ul { /* Estilos Desktop */
             list-style: none;
             display: flex;
         }
-
-        nav ul li {
-            margin-left: 25px;
+        nav#main-nav ul li {
+            margin-left: 15px;
         }
-
-        nav ul li a {
+        nav#main-nav ul li a {
             color: var(--cor-secundaria);
-            font-weight: 600;
-            padding: 8px 0;
+            font-weight: 500;
+            padding: 10px 15px;
             position: relative;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        nav ul li a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
+        nav#main-nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--cor-secundaria);
+            opacity: 1;
+        }
+        nav#main-nav ul li a.active {
             background-color: var(--cor-secundaria);
-            transition: width 0.3s ease;
-        }
-        nav ul li a:hover::after,
-        nav ul li a.active::after {
-            width: 100%;
+            color: var(--cor-principal);
+            font-weight: 600;
         }
 
 
         /* Seções (Conteúdo Dinâmico) */
         main {
             flex-grow: 1;
+            overflow-x: hidden;
         }
 
         .page-section {
-            padding: 40px 0;
-            min-height: 70vh; /* Para preencher a tela */
-            display: none; /* Ocultar por padrão */
+            padding: 60px 0; /* Padding para dar respiro interno */
+            /* min-height: 70vh; REMOVIDO para evitar espaço branco excessivo */
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
         }
         .page-section.active {
-            display: block; /* Mostrar seção ativa */
-        }
-        .page-section:first-of-type { /* Mostra a primeira seção por padrão */
-             /* display: block; */ /* JS vai controlar isso */
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
         }
 
 
         /* Hero Section (Home) */
         #home {
-            /* Imagem de fundo - substitua pela sua ou use um gradiente mais elaborado */
             background: linear-gradient(rgba(57, 8, 4, 0.75), rgba(57, 8, 4, 0.85)), url('https://images.unsplash.com/photo-1576091066084-24408a5a8a67?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
             color: var(--cor-secundaria);
-            padding: 100px 20px; /* Aumentar padding */
-            min-height: 80vh; /* Altura maior */
+            padding-top: 100px; /* Mantém paddings verticais */
+            padding-bottom: 100px;
+            min-height: 80vh; /* Específico para a home, pode ser mantido */
+            text-align: center;
+        }
+        #home.active { /* Para que o display flex funcione quando a home está ativa */
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
         }
-        #home .container { /* Para alinhar o conteúdo dentro da home */
+        #home .container {
             max-width: 800px;
         }
         #home h1 {
-            font-size: 3.5rem; /* Maior */
+            font-size: 3.5rem;
             margin-bottom: 1.5rem;
             color: var(--cor-secundaria);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para legibilidade */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         #home p {
-            font-size: 1.3rem; /* Maior */
+            font-size: 1.3rem;
             max-width: 700px;
             margin: 0 auto 2.5rem auto;
             line-height: 1.8;
@@ -204,7 +255,7 @@
             border: 1px solid var(--cor-borda-sutil);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: var(--sombra-padrao);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
@@ -212,7 +263,7 @@
 
         .product-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: var(--sombra-hover-leve);
         }
 
         .product-card img {
@@ -237,8 +288,8 @@
             font-size: 1.3rem;
             font-weight: 700;
             color: var(--cor-principal);
-            margin-top: auto; /* Empurra o preço para baixo */
-            padding-top: 10px; /* Espaço acima do preço */
+            margin-top: auto;
+            padding-top: 10px;
         }
         .product-card p {
             font-size: 0.9rem;
@@ -248,6 +299,10 @@
         }
 
         /* Agendamento e Contato */
+        #agendamento .container,
+        #contato .container {
+            max-width: 700px; /* Limita a largura do formulário e conteúdo de contato */
+        }
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -268,14 +323,20 @@
             width: 100%;
             padding: 12px;
             border: 1px solid var(--cor-borda-sutil);
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 1rem;
             font-family: 'Montserrat', sans-serif;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-group input:focus, .form-group textarea:focus {
             outline: none;
             border-color: var(--cor-principal);
-            box-shadow: 0 0 0 2px rgba(57, 8, 4, 0.2);
+            box-shadow: 0 0 0 3px rgba(57, 8, 4, 0.15);
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #999;
+            opacity: 1;
         }
 
 
@@ -289,6 +350,7 @@
             padding: 10px;
             border-radius: 5px;
             font-weight: bold;
+            display: none;
         }
         .success {
             background-color: #d4edda;
@@ -301,10 +363,12 @@
             border: 1px solid #f5c6cb;
         }
 
-        #contato .contact-info {
+        #contato .contact-info-wrapper {
             margin-top: 2rem;
+        }
+        #contato .contact-info {
             padding: 30px;
-            background-color: #fdf6f6; /* Um tom muito claro derivado do principal */
+            background-color: #fdf6f6;
             border-left: 5px solid var(--cor-principal);
             border-radius: 0 8px 8px 0;
         }
@@ -335,7 +399,7 @@
             color: var(--cor-texto-claro);
             text-align: center;
             padding: 2rem 0;
-            margin-top: auto; /* Garante que o footer fique no final */
+            margin-top: auto;
         }
         footer p {
             margin-bottom: 0;
@@ -344,37 +408,64 @@
 
         /* Responsividade */
         @media (max-width: 768px) {
-            header .container {
+            .hamburger-menu {
+                display: block;
+            }
+
+            nav#main-nav { /* Navegação se torna sidebar */
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                max-width: 80%;
+                height: 100vh;
+                background-color: var(--cor-principal);
+                padding-top: 70px; /* Ajuste para não sobrepor header */
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+                z-index: 1100;
+                transition: left 0.35s ease-in-out;
+                overflow-y: auto;
+            }
+
+            nav#main-nav.open {
+                left: 0;
+            }
+
+            nav#main-nav ul {
                 flex-direction: column;
+                width: 100%;
                 align-items: flex-start;
             }
-            nav ul {
-                margin-top: 1rem;
-                flex-direction: column;
-                width: 100%;
-            }
-            nav ul li {
+
+            nav#main-nav ul li {
                 margin-left: 0;
-                margin-bottom: 0.5rem;
                 width: 100%;
             }
-            nav ul li a {
+
+            nav#main-nav ul li a {
                 display: block;
-                padding: 10px;
-                text-align: left;
-                background-color: rgba(255,255,255,0.05);
-                border-radius: 4px;
+                padding: 15px 25px;
+                color: var(--cor-secundaria);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                border-radius: 0;
+                font-weight: 500;
             }
-            nav ul li a::after { display: none; } /* Remove sublinhado em mobile nav */
+            nav#main-nav ul li a:hover {
+                background-color: rgba(255,255,255,0.1);
+            }
+            nav#main-nav ul li a.active {
+                background-color: var(--cor-secundaria);
+                color: var(--cor-principal);
+                font-weight: 600;
+            }
 
+            #home h1 { font-size: 2.8rem; }
+            #home p { font-size: 1.1rem; }
 
-            #home h1 { font-size: 2.5rem; }
-            #home p { font-size: 1rem; }
-
-            .page-section { padding: 30px 0; }
+            .page-section { padding: 40px 0; } /* Reduzir padding vertical em mobile */
 
             #produtos .product-grid {
-                grid-template-columns: 1fr; /* Uma coluna em telas menores */
+                grid-template-columns: 1fr;
             }
         }
         /* Spinner de carregamento */
@@ -386,6 +477,7 @@
             height: 50px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
+            display: none;
         }
 
         @keyframes spin {
@@ -400,7 +492,12 @@
     <header>
         <div class="container">
             <a href="#home" class="logo nav-link">Otica Prime</a>
-            <nav>
+            <button class="hamburger-menu" aria-label="Abrir menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav id="main-nav">
                 <ul>
                     <li><a href="#home" class="nav-link active">Início</a></li>
                     <li><a href="#produtos" class="nav-link">Produtos</a></li>
@@ -411,8 +508,10 @@
         </div>
     </header>
 
+    <div class="overlay"></div>
+
     <main>
-        <section id="home" class="page-section active">
+        <section id="home" class="page-section">
             <div class="container">
                 <h1>Bem-vindo à Otica Prime</h1>
                 <p>Sua visão em primeiro lugar, com estilo e qualidade em Parintins.</p>
@@ -464,9 +563,11 @@
             <div class="container">
                 <h2>Entre em Contato</h2>
                 <p>Estamos localizados no coração de Parintins, prontos para atender você!</p>
-                <div class="contact-info" id="contact-info-details">
-                    <!-- Informações de contato serão carregadas aqui pelo JS -->
+                <div class="contact-info-wrapper">
                     <div class="loader" id="contact-loader"></div>
+                    <div id="contact-info-details" class="contact-info" style="display: none;"> <!-- Começa escondido -->
+                        <!-- Informações de contato serão carregadas aqui pelo JS -->
+                    </div>
                 </div>
                 <div id="map-container">
                     <!-- Mapa será carregado aqui pelo JS -->
@@ -488,7 +589,6 @@
     <script>
         // --- INÍCIO DO JAVASCRIPT ---
 
-        // 1. CONFIGURAÇÃO DO FIREBASE (SUBSTITUA PELAS SUAS CREDENCIAIS)
         const firebaseConfig = {
             apiKey: "AIzaSyDeWFdLJ1XbaPn-ElJ6Jhq4LpQqpHSyeLs",
             authDomain: "for-helpers-2ab8e.firebaseapp.com",
@@ -500,27 +600,104 @@
             measurementId: "G-98279NTZPJ"
         };
 
-        // Inicializar Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
 
-        // --- INFORMAÇÕES DE CONTATO ---
-        const contactInfoDetails = document.getElementById('contact-info-details');
-        const contactLoader = document.getElementById('contact-loader');
-        const mapContainer = document.getElementById('map-container');
+        let productsDataLoaded = false;
+        let contactDataLoaded = false;
 
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageSections = document.querySelectorAll('.page-section');
+        const productGrid = document.getElementById('product-grid');
+        const productLoader = document.getElementById('product-grid-loader');
+        const contactInfoContainer = document.getElementById('contact-info-details');
+        const contactLoaderElem = document.getElementById('contact-loader');
+        const mapContainer = document.getElementById('map-container');
+        const appointmentForm = document.getElementById('appointmentForm');
+        const availabilityMessage = document.getElementById('availability-message');
+
+        const hamburgerButton = document.querySelector('.hamburger-menu');
+        const mainNav = document.getElementById('main-nav');
+        const overlay = document.querySelector('.overlay');
+        const navLinksSidebar = mainNav.querySelectorAll('a.nav-link');
+
+        // --- CONTROLE DO MENU HAMBURGER/SIDEBAR ---
+        if (hamburgerButton && mainNav && overlay) {
+            hamburgerButton.addEventListener('click', () => {
+                mainNav.classList.toggle('open');
+                hamburgerButton.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = mainNav.classList.contains('open') ? 'hidden' : '';
+            });
+
+            overlay.addEventListener('click', () => {
+                mainNav.classList.remove('open');
+                hamburgerButton.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            navLinksSidebar.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mainNav.classList.contains('open')) {
+                        mainNav.classList.remove('open');
+                        hamburgerButton.classList.remove('active');
+                        overlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                    // A navegação SPA já é tratada pelo listener global 'navLinks'
+                });
+            });
+        }
+
+        // --- NAVEGAÇÃO SPA ---
+        function navigateToSection(hash) {
+            if (!hash || hash === '#') hash = '#home';
+
+            pageSections.forEach(section => {
+                if ('#' + section.id === hash) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+
+            navLinks.forEach(link => { // Este seletor já pega os links do desktop e da sidebar
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            if(window.location.hash !== hash) {
+                window.location.hash = hash;
+            }
+            window.scrollTo(0,0);
+        }
+        
+        navLinks.forEach(link => { // Listener global para todos os nav-links
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                navigateToSection(targetId);
+            });
+        });
+
+        // --- CARREGAMENTO DE DADOS DINÂMICOS ---
         function loadContactInfo() {
-            if (!contactInfoDetails) return;
-            if(contactLoader) contactLoader.style.display = 'block';
+            if (!contactInfoContainer || contactDataLoaded) return;
+            if(contactLoaderElem) contactLoaderElem.style.display = 'block';
+            if(contactInfoContainer) contactInfoContainer.style.display = 'none';
 
             db.ref('informacoesContato').once('value')
                 .then(snapshot => {
-                    if(contactLoader) contactLoader.style.display = 'none';
+                    if(contactLoaderElem) contactLoaderElem.style.display = 'none';
+                    if(contactInfoContainer) contactInfoContainer.style.display = 'block';
                     if (snapshot.exists()) {
                         const info = snapshot.val();
-                        contactInfoDetails.innerHTML = `
+                        contactInfoContainer.innerHTML = `
                             <p><strong>Endereço:</strong> ${info.endereco || 'Não informado'}</p>
                             <p><strong>Telefone/WhatsApp:</strong> ${info.telefone || 'Não informado'}</p>
                             <p><strong>Email:</strong> <a href="mailto:${info.email}">${info.email || 'Não informado'}</a></p>
@@ -534,142 +711,71 @@
                         } else if (mapContainer) {
                             mapContainer.innerHTML = '<p>Mapa não disponível.</p>';
                         }
+                        contactDataLoaded = true;
                     } else {
-                        contactInfoDetails.innerHTML = '<p>Informações de contato não disponíveis.</p>';
+                        contactInfoContainer.innerHTML = '<p>Informações de contato não disponíveis.</p>';
                          if (mapContainer) mapContainer.innerHTML = '';
                     }
                 })
                 .catch(error => {
-                    if(contactLoader) contactLoader.style.display = 'none';
+                    if(contactLoaderElem) contactLoaderElem.style.display = 'none';
+                    if(contactInfoContainer) contactInfoContainer.style.display = 'block';
                     console.error("Erro ao carregar informações de contato: ", error);
-                    contactInfoDetails.innerHTML = '<p>Erro ao carregar informações. Tente novamente mais tarde.</p>';
+                    contactInfoContainer.innerHTML = '<p>Erro ao carregar informações. Tente novamente mais tarde.</p>';
                     if (mapContainer) mapContainer.innerHTML = '';
                 });
         }
 
-        // --- NAVEGAÇÃO SPA (Single Page Application) ---
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pageSections = document.querySelectorAll('.page-section');
-
-        function navigateToSection(hash) {
-            if (!hash || hash === '#') hash = '#home'; // Default para home
-
-            pageSections.forEach(section => {
-                if ('#' + section.id === hash) {
-                    section.classList.add('active');
-                } else {
-                    section.classList.remove('active');
-                }
-            });
-
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === hash) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
-            window.location.hash = hash; // Atualiza a URL
-            window.scrollTo(0,0); // Rola para o topo da página
-        }
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href');
-                navigateToSection(targetId);
-            });
-        });
-
-        // Navegação inicial baseada no hash da URL ou default para #home
-        document.addEventListener('DOMContentLoaded', () => {
-            const initialHash = window.location.hash || '#home';
-            navigateToSection(initialHash);
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-            
-            // Carregar dados dinâmicos quando a respectiva seção for visível pela primeira vez
-            // ou se for a seção inicial.
-            if (initialHash === '#produtos') loadProducts();
-            if (initialHash === '#contato') loadContactInfo();
-
-            // Adicionar observadores para carregar dados quando a seção se torna ativa
-            // Isso é útil se o usuário navegar diretamente para uma seção sem ser a inicial
-            const observer = new MutationObserver((mutationsList) => {
-                for (const mutation of mutationsList) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        const targetSection = mutation.target;
-                        if (targetSection.classList.contains('active')) {
-                            if (targetSection.id === 'produtos' && !document.getElementById('product-grid').hasChildNodes() && productGrid.innerHTML.trim() === '') {
-                                loadProducts();
-                            } else if (targetSection.id === 'contato' && contactInfoDetails.innerHTML.includes('loader')) {
-                                loadContactInfo();
-                            }
-                        }
-                    }
-                }
-            });
-            pageSections.forEach(section => {
-                observer.observe(section, { attributes: true });
-            });
-        });
-
-
-        // --- PRODUTOS ---
-        const productGrid = document.getElementById('product-grid');
-        const productLoader = document.getElementById('product-grid-loader');
-
         function loadProducts() {
-            if (!productGrid) return; // Se não estiver na página de produtos
-            productLoader.style.display = 'block';
-            productGrid.innerHTML = ''; // Limpa grid atual
+            if (!productGrid || productsDataLoaded) return;
+            if(productLoader) productLoader.style.display = 'block';
+            productGrid.innerHTML = '';
 
             db.ref('produtos').once('value')
                 .then(snapshot => {
-                    productLoader.style.display = 'none';
+                    if(productLoader) productLoader.style.display = 'none';
                     if (snapshot.exists()) {
                         const products = snapshot.val();
                         for (const key in products) {
                             const product = products[key];
                             const productCard = `
                                 <div class="product-card">
-                                    <img src="${product.imagemUrl || 'https://via.placeholder.com/300x200/e0e0e0/666666?text=Sem+Imagem'}" alt="${product.nome}">
+                                    <img src="${product.imagemUrl || 'https://via.placeholder.com/300x200/e0e0e0/666666?text=Sem+Imagem'}" alt="${product.nome}" loading="lazy">
                                     <div class="content">
                                         <h3>${product.nome}</h3>
-                                        <p>${product.descricao}</p>
+                                        <p>${product.descricao || 'Descrição não disponível.'}</p>
                                         <div class="price">R$ ${parseFloat(product.preco).toFixed(2).replace('.',',')}</div>
                                     </div>
                                 </div>
                             `;
                             productGrid.innerHTML += productCard;
                         }
+                        productsDataLoaded = true;
                     } else {
                         productGrid.innerHTML = '<p>Nenhum produto encontrado.</p>';
                     }
                 })
                 .catch(error => {
-                    productLoader.style.display = 'none';
+                    if(productLoader) productLoader.style.display = 'none';
                     console.error("Erro ao carregar produtos: ", error);
                     productGrid.innerHTML = '<p>Erro ao carregar produtos. Tente novamente mais tarde.</p>';
                 });
         }
         
         // --- AGENDAMENTO ---
-        const appointmentForm = document.getElementById('appointmentForm');
-        const availabilityMessage = document.getElementById('availability-message');
-
         const horariosFuncionamento = {
             semana: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "14:00", fimTarde: "18:00" },
-            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" } // Tarde "inválida" para simplificar
+            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" }
         };
 
         function isValidTime(date, time) {
-            const dayOfWeek = new Date(date + 'T00:00:00').getDay(); // 0 (Dom) - 6 (Sab) - ajuste de fuso
+            const dayOfWeek = new Date(date + 'T00:00:00').getUTCDay();
             const [hour, minute] = time.split(':').map(Number);
 
             let operatingHours;
-            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos Domingos." }; // Domingo
-            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado; // Sábado
-            else operatingHours = horariosFuncionamento.semana; // Segunda a Sexta
+            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos Domingos." };
+            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado;
+            else operatingHours = horariosFuncionamento.semana;
 
             const selectedTime = hour * 60 + minute;
             const inicioManha = timeToMinutes(operatingHours.inicioManha);
@@ -681,13 +787,11 @@
             const isInAfternoonShift = selectedTime >= inicioTarde && selectedTime < fimTarde;
             
             if (!(isInMorningShift || isInAfternoonShift)) {
-                 return { valid: false, message: `Horário fora do funcionamento. Funcionamos de ${operatingHours.inicioManha}-${operatingHours.fimManha} e ${operatingHours.inicioTarde}-${operatingHours.fimTarde} (${dayOfWeek === 6 ? 'Sábado' : 'Seg-Sex'}).` };
+                 return { valid: false, message: `Horário fora do funcionamento. (${dayOfWeek === 6 ? 'Sábado: '+ operatingHours.inicioManha + '-' + operatingHours.fimManha : 'Seg-Sex: '+ operatingHours.inicioManha + '-' + operatingHours.fimManha + ' e ' + operatingHours.inicioTarde + '-' + operatingHours.fimTarde}).` };
             }
-            // Verificar se o horário é "quebrado" (ex: 08:15 quando step é 30 min)
             if (minute % 30 !== 0) {
                 return { valid: false, message: "Por favor, escolha horários cheios ou de meia em meia hora (ex: 08:00, 08:30)." };
             }
-
             return { valid: true };
         }
 
@@ -696,28 +800,25 @@
             return h * 60 + m;
         }
 
-
         if (appointmentForm) {
             appointmentForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                showMessage('', ''); // Limpa mensagens anteriores
+                showMessage('', ''); 
 
                 const nome = document.getElementById('nome').value;
                 const contatoTel = document.getElementById('contatoTel').value;
                 const data = document.getElementById('data').value;
                 const hora = document.getElementById('hora').value;
 
-                // Validação de data futura
                 const hoje = new Date();
-                hoje.setHours(0,0,0,0); // Zera horas para comparar só data
-                const dataSelecionada = new Date(data + "T00:00:00"); // Adiciona T00:00:00 para evitar problemas de fuso na conversão para Date
+                hoje.setUTCHours(0,0,0,0); // Usar UTC para comparação
+                const dataSelecionada = new Date(data + "T00:00:00Z");
 
                 if (dataSelecionada < hoje) {
                     showMessage('Por favor, selecione uma data futura.', 'error');
                     return;
                 }
 
-                // Validação de horário de funcionamento
                 const timeValidation = isValidTime(data, hora);
                 if (!timeValidation.valid) {
                     showMessage(timeValidation.message, 'error');
@@ -726,7 +827,6 @@
 
                 const dataHoraCombinada = `${data}T${hora}`;
 
-                // Verificar disponibilidade no Firebase
                 db.ref('agendamentos')
                   .orderByChild('data_hora_combinada')
                   .equalTo(dataHoraCombinada)
@@ -735,7 +835,6 @@
                       if (snapshot.exists()) {
                           showMessage('Este horário já está agendado. Por favor, escolha outro.', 'error');
                       } else {
-                          // Horário disponível, salvar agendamento
                           const novoAgendamento = {
                               nome: nome,
                               contato: contatoTel,
@@ -771,9 +870,41 @@
             }
         }
 
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialHash = window.location.hash || '#home';
+            navigateToSection(initialHash);
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            if (initialHash === '#produtos' && !productsDataLoaded) {
+                loadProducts();
+            }
+            if (initialHash === '#contato' && !contactDataLoaded) {
+                loadContactInfo();
+            }
 
-        // --- INICIALIZAÇÃO GERAL ---
-        // Adicionado ao DOMContentLoaded para garantir que os elementos existam.
+            const observer = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const targetSection = mutation.target;
+                        if (targetSection.classList.contains('active')) {
+                            if (targetSection.id === 'produtos' && !productsDataLoaded) {
+                                loadProducts();
+                            } else if (targetSection.id === 'contato' && !contactDataLoaded) {
+                                loadContactInfo();
+                            }
+                        }
+                    }
+                }
+            });
+            pageSections.forEach(section => {
+                observer.observe(section, { attributes: true });
+            });
+
+            if (mainNav && mainNav.classList.contains('open')) { // Garante que o scroll do body está correto no load
+                document.body.style.overflow = 'hidden';
+            }
+        });
         
         // --- FIM DO JAVASCRIPT ---
     </script>
