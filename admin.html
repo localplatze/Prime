@@ -145,7 +145,11 @@
         .form-group input[type="text"],
         .form-group input[type="password"],
         .form-group input[type="number"],
+        .form-group input[type="email"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
         .form-group input[type="url"],
+        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 10px;
@@ -154,6 +158,25 @@
             font-size: 0.9rem;
         }
         .form-group textarea { min-height: 80px; resize: vertical; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .panel-box {
+            padding: 16px;
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 8px;
+            background: #fff;
+            margin-bottom: 18px;
+        }
+
+        .muted {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
 
         /* Tabelas */
         table {
@@ -216,6 +239,7 @@
          @media (max-width: 768px) {
             #admin-nav ul { flex-direction: column; align-items: center; }
             #admin-nav ul li { margin: 5px 0; width: 80%; text-align: center;}
+            .form-row { grid-template-columns: 1fr; gap: 0; }
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; }
             tr { border: 1px solid #ccc; margin-bottom: 5px; }
@@ -251,6 +275,7 @@
                 <li><a href="#admin-produtos" class="admin-nav-link active">Gerenciar Produtos</a></li>
                 <li><a href="#admin-agendamentos" class="admin-nav-link">Ver Agendamentos</a></li>
                 <li><a href="#admin-contato" class="admin-nav-link">Editar Contato</a></li>
+                <li><a href="#admin-configuracoes" class="admin-nav-link">Configurações</a></li>
             </ul>
         </nav>
 
@@ -310,6 +335,33 @@
         <!-- Seção Ver Agendamentos -->
         <section id="admin-agendamentos" class="admin-content-section">
             <h2>Agendamentos Recebidos</h2>
+            <div class="panel-box">
+                <h3>Novo agendamento pelo admin</h3>
+                <form id="adminAppointmentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminAppointmentName">Nome:</label>
+                            <input type="text" id="adminAppointmentName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminAppointmentContact">Contato:</label>
+                            <input type="text" id="adminAppointmentContact" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminAppointmentDate">Data:</label>
+                            <input type="date" id="adminAppointmentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminAppointmentTime">Horário:</label>
+                            <input type="time" id="adminAppointmentTime" min="08:00" max="18:00" step="1800" required>
+                        </div>
+                    </div>
+                    <button type="submit">Checar conflito e agendar</button>
+                    <p class="muted">O sistema bloqueia domingo, horários fora do expediente e horários já cadastrados.</p>
+                </form>
+            </div>
             <div id="appointmentsLoader" class="loader" style="display:none;"></div>
             <table id="appointmentsTable">
                 <thead>
@@ -358,6 +410,35 @@
                 <button type="submit">Salvar Informações de Contato</button>
             </form>
         </section>
+
+        <section id="admin-configuracoes" class="admin-content-section">
+            <h2>Configurações</h2>
+            <form id="emailSettingsForm" class="panel-box">
+                <h3>Notificação de novos agendamentos por e-mail</h3>
+                <p class="muted">Use uma implantação do Google Apps Script como app da web. Cole aqui a URL terminada em /exec e o e-mail que receberá os alertas.</p>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="emailNotificationsActive">
+                        Ativar envio de e-mail
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="googleScriptUrl">URL do Google Apps Script:</label>
+                    <input type="url" id="googleScriptUrl" value="https://script.google.com/macros/s/AKfycbw9YHPAOoCpbAzp5RXYG9Owi-8-Cb-M6SujC0XRFEnzvtNP_UHlVGutGJ2qKCzBg0HS/exec" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+                <div class="form-group">
+                    <label for="emailRecipient">E-mail que receberá os avisos:</label>
+                    <input type="email" id="emailRecipient" value="oticaprime3@gmail.com">
+                </div>
+                <button type="submit">Salvar configuração de e-mail</button>
+                <button type="button" id="testEmailBtn" class="button-secondary">Enviar e-mail de teste</button>
+            </form>
+            <div class="panel-box">
+                <h3>Migração do banco</h3>
+                <p class="muted">Copia os dados antigos da raiz do Firebase para a chave Prime. Nada é apagado da raiz, para não interferir no outro projeto em produção.</p>
+                <button type="button" id="migrateDatabaseBtn">Copiar dados antigos para Prime</button>
+            </div>
+        </section>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -383,6 +464,8 @@
         }
         const db = firebase.database();
         const storage = firebase.storage();
+        const APP_ROOT = 'Prime';
+        const appRef = (path = '') => db.ref(path ? `${APP_ROOT}/${path}` : APP_ROOT);
 
         // --- USUÁRIO E SENHA (HARDCODED - NÃO SEGURO PARA PRODUÇÃO!) ---
         const ADMIN_USER = "admin";
@@ -414,6 +497,12 @@
         // Elementos Agendamentos
         const appointmentsTableBody = document.querySelector('#appointmentsTable tbody');
         const appointmentsLoader = document.getElementById('appointmentsLoader');
+        let appointmentsListenerRef = null;
+        const adminAppointmentForm = document.getElementById('adminAppointmentForm');
+        const adminAppointmentNameInput = document.getElementById('adminAppointmentName');
+        const adminAppointmentContactInput = document.getElementById('adminAppointmentContact');
+        const adminAppointmentDateInput = document.getElementById('adminAppointmentDate');
+        const adminAppointmentTimeInput = document.getElementById('adminAppointmentTime');
 
         // Elementos Contato
         const contactInfoForm = document.getElementById('contactInfoForm');
@@ -423,6 +512,16 @@
         const contactHoursWeekInput = document.getElementById('contactHoursWeek');
         const contactHoursSatInput = document.getElementById('contactHoursSat');
         const contactMapURLInput = document.getElementById('contactMapURL');
+
+        // Elementos Configurações
+        const emailSettingsForm = document.getElementById('emailSettingsForm');
+        const emailNotificationsActiveInput = document.getElementById('emailNotificationsActive');
+        const googleScriptUrlInput = document.getElementById('googleScriptUrl');
+        const emailRecipientInput = document.getElementById('emailRecipient');
+        const migrateDatabaseBtn = document.getElementById('migrateDatabaseBtn');
+        const testEmailBtn = document.getElementById('testEmailBtn');
+        const DEFAULT_ALERT_EMAIL = 'oticaprime3@gmail.com';
+        const DEFAULT_GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9YHPAOoCpbAzp5RXYG9Owi-8-Cb-M6SujC0XRFEnzvtNP_UHlVGutGJ2qKCzBg0HS/exec';
 
         const productImageFileInput = document.getElementById('productImageFile');
         const imagePreview = document.getElementById('imagePreview');
@@ -460,12 +559,7 @@
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-                console.log('1 ' + username)
-                console.log('2 ' + ADMIN_USER)
-                console.log('3 ' + password)
-                console.log('4 ' + ADMIN_PASS)
-
-            if (username === ADMIN_PASS && password === ADMIN_USER) {
+            if (username === ADMIN_USER && password === ADMIN_PASS) {
                 loginSection.style.display = 'none';
                 adminPanel.style.display = 'block';
                 sessionStorage.setItem('isAdminLoggedIn', 'true'); // Simples flag de sessão
@@ -515,8 +609,9 @@
 
             // Carregar dados da seção específica
             if (hash === '#admin-produtos' && productsTableBody.innerHTML.trim() === '') loadProductsAdmin();
-            if (hash === '#admin-agendamentos' && appointmentsTableBody.innerHTML.trim() === '') loadAppointmentsAdmin();
+            if (hash === '#admin-agendamentos') loadAppointmentsAdmin();
             if (hash === '#admin-contato') loadContactInfoAdmin(); // Sempre recarrega ao visitar
+            if (hash === '#admin-configuracoes') loadEmailSettingsAdmin();
         }
 
 
@@ -551,7 +646,7 @@
 
                 const timestamp = new Date().getTime();
                 const randomSuffix = Math.random().toString(36).substring(2,8);
-                const fileName = `products/${timestamp}_${randomSuffix}_${file.name}`;
+                const fileName = `${APP_ROOT}/products/${timestamp}_${randomSuffix}_${file.name}`;
                 const storageRef = storage.ref(fileName);
                 const uploadTask = storageRef.put(file);
 
@@ -572,7 +667,6 @@
                             async () => { // Upload completo
                                 imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
                                 productImageURLInput.value = imageUrl; // Atualiza o campo hidden com a nova URL
-                                console.log('File available at', imageUrl);
                                 resolve();
                             }
                         );
@@ -605,8 +699,8 @@
             };
 
             const dbOperation = id
-                ? db.ref('produtos/' + id).update(productData) // Editar
-                : db.ref('produtos').push(productData);       // Adicionar novo
+                ? appRef('produtos/' + id).update(productData) // Editar
+                : appRef('produtos').push(productData);       // Adicionar novo
 
             dbOperation
                 .then(() => {
@@ -646,7 +740,7 @@
         function loadProductsAdmin() {
             productListLoader.style.display = 'block';
             productsTableBody.innerHTML = '';
-            db.ref('produtos').once('value')
+            appRef('produtos').once('value')
                 .then(snapshot => {
                     productListLoader.style.display = 'none';
                     if (snapshot.exists()) {
@@ -675,7 +769,7 @@
         }
 
         window.editProduct = (key) => {
-            db.ref('produtos/' + key).once('value').then(snapshot => {
+            appRef('produtos/' + key).once('value').then(snapshot => {
                 if (snapshot.exists()) {
                     const product = snapshot.val();
                     formTitle.textContent = 'Editar';
@@ -711,13 +805,13 @@
         window.deleteProduct = (key, productName) => {
             if (confirm(`Tem certeza que deseja excluir o produto "${productName}"?`)) {
                 // Primeiro, pegar a URL da imagem do produto no DB
-                db.ref('produtos/' + key).once('value')
+                appRef('produtos/' + key).once('value')
                     .then(snapshot => {
                         const product = snapshot.val();
                         const imageUrl = product ? product.imagemUrl : null;
 
                         // Excluir do Realtime Database
-                        return db.ref('produtos/' + key).remove().then(() => imageUrl); // Passa a URL para o próximo then
+                        return appRef('produtos/' + key).remove().then(() => imageUrl); // Passa a URL para o próximo then
                     })
                     .then((imageUrl) => {
                         // Se tinha uma URL de imagem, tentar excluir do Storage
@@ -739,13 +833,101 @@
 
 
         // --- VER AGENDAMENTOS ---
+        const horariosFuncionamento = {
+            semana: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "14:00", fimTarde: "18:00" },
+            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" }
+        };
+
+        function timeToMinutes(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function isValidTime(date, time) {
+            const dayOfWeek = new Date(date + 'T00:00:00').getUTCDay();
+            const [hour, minute] = time.split(':').map(Number);
+
+            let operatingHours;
+            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos domingos." };
+            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado;
+            else operatingHours = horariosFuncionamento.semana;
+
+            const selectedTime = hour * 60 + minute;
+            const isInMorningShift = selectedTime >= timeToMinutes(operatingHours.inicioManha) && selectedTime < timeToMinutes(operatingHours.fimManha);
+            const isInAfternoonShift = selectedTime >= timeToMinutes(operatingHours.inicioTarde) && selectedTime < timeToMinutes(operatingHours.fimTarde);
+
+            if (!(isInMorningShift || isInAfternoonShift)) {
+                return { valid: false, message: "Horário fora do funcionamento." };
+            }
+            if (minute % 30 !== 0) {
+                return { valid: false, message: "Use intervalos de 30 minutos." };
+            }
+            return { valid: true };
+        }
+
+        async function appointmentHasConflict(data, hora) {
+            const dataHoraCombinada = `${data}T${hora}`;
+            const snapshot = await appRef('agendamentos')
+                .orderByChild('data_hora_combinada')
+                .equalTo(dataHoraCombinada)
+                .once('value');
+            return snapshot.exists();
+        }
+
+        if (adminAppointmentForm) {
+            adminAppointmentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = adminAppointmentDateInput.value;
+                const hora = adminAppointmentTimeInput.value;
+                const hoje = new Date();
+                hoje.setUTCHours(0,0,0,0);
+                const dataSelecionada = new Date(data + "T00:00:00Z");
+
+                if (dataSelecionada < hoje) {
+                    showGeralMessage('Selecione uma data futura.', 'error');
+                    return;
+                }
+
+                const timeValidation = isValidTime(data, hora);
+                if (!timeValidation.valid) {
+                    showGeralMessage(timeValidation.message, 'error');
+                    return;
+                }
+
+                try {
+                    if (await appointmentHasConflict(data, hora)) {
+                        showGeralMessage('Já existe agendamento nesse horário. Escolha outro.', 'error');
+                        return;
+                    }
+
+                    await appRef('agendamentos').push({
+                        nome: adminAppointmentNameInput.value,
+                        contato: adminAppointmentContactInput.value,
+                        data,
+                        hora,
+                        data_hora_combinada: `${data}T${hora}`,
+                        origem: 'admin',
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+
+                    showGeralMessage('Agendamento criado com sucesso!', 'success');
+                    adminAppointmentForm.reset();
+                    loadAppointmentsAdmin();
+                } catch (err) {
+                    showGeralMessage('Erro ao criar agendamento: ' + err.message, 'error');
+                }
+            });
+        }
+
         function loadAppointmentsAdmin() {
             appointmentsLoader.style.display = 'block';
             appointmentsTableBody.innerHTML = '';
-            // Ordenar por data e hora - pode precisar de índice composto ou fazer no cliente
-            db.ref('agendamentos').orderByChild('data_hora_combinada').once('value')
-                .then(snapshot => {
+            // Mantem a agenda sincronizada enquanto o admin estiver nessa tela.
+            if (appointmentsListenerRef) appointmentsListenerRef.off();
+            appointmentsListenerRef = appRef('agendamentos').orderByChild('data_hora_combinada');
+            appointmentsListenerRef.on('value', snapshot => {
                     appointmentsLoader.style.display = 'none';
+                    appointmentsTableBody.innerHTML = '';
                     if (snapshot.exists()) {
                         let appointments = [];
                         snapshot.forEach(childSnapshot => {
@@ -779,16 +961,18 @@
                     } else {
                         appointmentsTableBody.innerHTML = '<tr><td colspan="5">Nenhum agendamento encontrado.</td></tr>';
                     }
-                })
-                .catch(err => {
+                }, err => {
                     appointmentsLoader.style.display = 'none';
-                    showGeralMessage('Erro ao carregar agendamentos: ' + err.message, 'error');
+                    const detail = err && err.code === 'PERMISSION_DENIED'
+                        ? ' O Firebase bloqueou o acesso; verifique as regras do Realtime Database para a chave Prime.'
+                        : '';
+                    showGeralMessage('Erro ao carregar agendamentos: ' + (err.message || err) + detail, 'error');
                 });
         }
         
         window.deleteAppointment = (key, appointmentDetails) => {
             if (confirm(`Tem certeza que deseja excluir o agendamento de "${appointmentDetails}"?`)) {
-                db.ref('agendamentos/' + key).remove()
+                appRef('agendamentos/' + key).remove()
                     .then(() => {
                         showGeralMessage('Agendamento excluído com sucesso!', 'success');
                         loadAppointmentsAdmin(); // Recarrega a lista
@@ -801,7 +985,7 @@
 
         // --- EDITAR INFORMAÇÕES DE CONTATO ---
         function loadContactInfoAdmin() {
-            db.ref('informacoesContato').once('value')
+            appRef('informacoesContato').once('value')
                 .then(snapshot => {
                     if (snapshot.exists()) {
                         const info = snapshot.val();
@@ -827,10 +1011,108 @@
                 mapaUrl: contactMapURLInput.value
             };
 
-            db.ref('informacoesContato').set(contactData) // .set() substitui tudo no nó
+            appRef('informacoesContato').set(contactData) // .set() substitui tudo no nó
                 .then(() => showGeralMessage('Informações de contato atualizadas com sucesso!', 'success'))
                 .catch(err => showGeralMessage('Erro ao atualizar informações: ' + err.message, 'error'));
         });
+
+        // --- CONFIGURAÇÕES ---
+        function loadEmailSettingsAdmin() {
+            appRef('configuracoes/notificacoesEmail').once('value')
+                .then(snapshot => {
+                    const config = snapshot.val() || {};
+                    emailNotificationsActiveInput.checked = !!config.ativo;
+                    googleScriptUrlInput.value = config.googleScriptUrl || DEFAULT_GOOGLE_SCRIPT_URL;
+                    emailRecipientInput.value = config.destinatario || DEFAULT_ALERT_EMAIL;
+                })
+                .catch(err => showGeralMessage('Erro ao carregar configurações de e-mail: ' + err.message, 'error'));
+        }
+
+        if (emailSettingsForm) {
+            emailSettingsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const emailSettings = {
+                    ativo: emailNotificationsActiveInput.checked,
+                    googleScriptUrl: googleScriptUrlInput.value.trim(),
+                    destinatario: emailRecipientInput.value.trim(),
+                    atualizadoEm: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                if (emailSettings.ativo && (!emailSettings.googleScriptUrl || !emailSettings.destinatario)) {
+                    showGeralMessage('Preencha a URL do Google Apps Script e o e-mail destinatário para ativar o envio.', 'error');
+                    return;
+                }
+
+                appRef('configuracoes/notificacoesEmail').set(emailSettings)
+                    .then(() => showGeralMessage('Configuração de e-mail salva com sucesso!', 'success'))
+                    .catch(err => showGeralMessage('Erro ao salvar configuração de e-mail: ' + err.message, 'error'));
+            });
+        }
+
+        if (testEmailBtn) {
+            testEmailBtn.addEventListener('click', async () => {
+                const webhookUrl = googleScriptUrlInput.value.trim();
+                const destinatario = emailRecipientInput.value.trim();
+                if (!webhookUrl || !destinatario) {
+                    showGeralMessage('Informe a URL do Apps Script e o e-mail destinatário.', 'error');
+                    return;
+                }
+                try {
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ destinatario, nome: 'Teste do painel', contato: '-', data: '-', hora: '-', origem: 'Teste Otica Prime' })
+                    });
+                    showGeralMessage('Teste enviado. Verifique a caixa de entrada e o spam.', 'success');
+                } catch (err) {
+                    showGeralMessage('Não foi possível chamar o Apps Script: ' + err.message, 'error');
+                }
+            });
+        }
+
+        if (migrateDatabaseBtn) {
+            migrateDatabaseBtn.addEventListener('click', async () => {
+                if (!confirm('Copiar produtos, agendamentos e informações de contato antigos para Prime? Os dados antigos serão mantidos.')) {
+                    return;
+                }
+
+                migrateDatabaseBtn.disabled = true;
+                migrateDatabaseBtn.textContent = 'Copiando...';
+
+                try {
+                    const legacyPaths = ['produtos', 'agendamentos', 'informacoesContato'];
+                    const updates = {};
+
+                    for (const path of legacyPaths) {
+                        const [legacySnapshot, primeSnapshot] = await Promise.all([
+                            db.ref(path).once('value'),
+                            appRef(path).once('value')
+                        ]);
+
+                        if (legacySnapshot.exists() && !primeSnapshot.exists()) {
+                            updates[`${APP_ROOT}/${path}`] = legacySnapshot.val();
+                        }
+                    }
+
+                    if (Object.keys(updates).length === 0) {
+                        showGeralMessage('Nada para copiar: Prime já possui esses dados ou a raiz antiga está vazia.', 'info');
+                        return;
+                    }
+
+                    await db.ref().update(updates);
+                    showGeralMessage('Dados antigos copiados para Prime com sucesso!', 'success');
+                    loadProductsAdmin();
+                    loadAppointmentsAdmin();
+                    loadContactInfoAdmin();
+                } catch (err) {
+                    showGeralMessage('Erro ao migrar banco: ' + err.message, 'error');
+                } finally {
+                    migrateDatabaseBtn.disabled = false;
+                    migrateDatabaseBtn.textContent = 'Copiar dados antigos para Prime';
+                }
+            });
+        }
 
         // Carregar dados da primeira aba visível (Produtos) se logado no refresh
         if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {

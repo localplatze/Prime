@@ -10,13 +10,17 @@
         /* Reset e Estilos Globais */
         :root {
             --cor-principal: #390804;
+            --cor-principal-2: #6d2118;
+            --cor-destaque: #c89b55;
             --cor-secundaria: #FFFFFF;
             --cor-texto-claro: #f4f4f4;
-            --cor-texto-escuro: #333333;
-            --cor-borda-sutil: #e0e0e0;
-            --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --sombra-hover-leve: 0 6px 15px rgba(0, 0, 0, 0.12);
-            --sombra-botao-hover: 0 4px 10px rgba(0,0,0,0.2);
+            --cor-texto-escuro: #28211f;
+            --cor-texto-suave: #6b5d58;
+            --cor-fundo: #fffaf6;
+            --cor-borda-sutil: rgba(57, 8, 4, 0.12);
+            --sombra-padrao: 0 18px 45px rgba(57, 8, 4, 0.12);
+            --sombra-hover-leve: 0 22px 55px rgba(57, 8, 4, 0.16);
+            --sombra-botao-hover: 0 14px 28px rgba(57, 8, 4, 0.24);
         }
 
         * {
@@ -27,7 +31,8 @@
 
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: var(--cor-secundaria);
+            background:
+                linear-gradient(180deg, #fffaf6 0%, #ffffff 42%, #fff7f0 100%);
             color: var(--cor-texto-escuro);
             line-height: 1.6;
             display: flex;
@@ -45,10 +50,11 @@
         h1, h2, h3 {
             color: var(--cor-principal);
             margin-bottom: 1rem;
+            letter-spacing: 0;
         }
 
         h1 { font-size: 2.5rem; }
-        h2 { font-size: 2rem; }
+        h2 { font-size: 2rem; line-height: 1.12; }
         h3 { font-size: 1.5rem; }
 
         p {
@@ -72,20 +78,20 @@
         }
 
         button, input[type="submit"] {
-            background-color: var(--cor-principal);
+            background: linear-gradient(135deg, var(--cor-principal), var(--cor-principal-2));
             color: var(--cor-secundaria);
             border: none;
             padding: 12px 25px;
             font-size: 1rem;
             font-weight: 600;
-            border-radius: 6px;
+            border-radius: 999px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, filter 0.3s ease;
             text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 24px rgba(57, 8, 4, 0.22);
         }
         button:not(.hamburger-menu):hover, input[type="submit"]:hover { /* Evita aplicar ao hamburger */
-            background-color: #521b17;
+            filter: brightness(1.08);
             transform: translateY(-2px);
             box-shadow: var(--sombra-botao-hover);
         }
@@ -93,10 +99,11 @@
 
         /* Header */
         header {
-            background-color: var(--cor-principal);
+            background: rgba(57, 8, 4, 0.86);
+            backdrop-filter: blur(18px);
             color: var(--cor-secundaria);
-            padding: 0.8rem 0;
-            box-shadow: var(--sombra-padrao);
+            padding: 0.55rem 0;
+            box-shadow: 0 12px 36px rgba(25, 5, 4, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000; /* Abaixo da sidebar e overlay */
@@ -110,7 +117,7 @@
         }
 
         header .logo {
-            font-size: 1.8rem;
+            font-size: 1.55rem;
             font-weight: 700;
             color: var(--cor-secundaria);
             z-index: 1102; /* Para ficar acima da sidebar caso o logo seja grande */
@@ -176,9 +183,9 @@
         nav#main-nav ul li a {
             color: var(--cor-secundaria);
             font-weight: 500;
-            padding: 10px 15px;
+            padding: 10px 16px;
             position: relative;
-            border-radius: 6px;
+            border-radius: 999px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         nav#main-nav ul li a:hover {
@@ -187,7 +194,7 @@
             opacity: 1;
         }
         nav#main-nav ul li a.active {
-            background-color: var(--cor-secundaria);
+            background-color: rgba(255,255,255,0.95);
             color: var(--cor-principal);
             font-weight: 600;
         }
@@ -200,7 +207,7 @@
         }
 
         .page-section {
-            padding: 60px 0; /* Padding para dar respiro interno */
+            padding: 72px 0; /* Padding para dar respiro interno */
             /* min-height: 70vh; REMOVIDO para evitar espaço branco excessivo */
             display: none;
             opacity: 0;
@@ -216,12 +223,24 @@
 
         /* Hero Section (Home) */
         #home {
-            background: linear-gradient(rgba(57, 8, 4, 0.75), rgba(57, 8, 4, 0.85)), url('https://images.unsplash.com/photo-1576091066084-24408a5a8a67?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+            background:
+                linear-gradient(105deg, rgba(24, 5, 4, 0.94), rgba(57, 8, 4, 0.76) 48%, rgba(12, 12, 12, 0.46)),
+                url('https://images.unsplash.com/photo-1576091066084-24408a5a8a67?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
             color: var(--cor-secundaria);
-            padding-top: 100px; /* Mantém paddings verticais */
-            padding-bottom: 100px;
-            min-height: 80vh; /* Específico para a home, pode ser mantido */
-            text-align: center;
+            padding: 84px 0 54px;
+            min-height: calc(100vh - 72px);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #home::after {
+            content: "";
+            position: absolute;
+            inset: auto -8% -90px -8%;
+            height: 180px;
+            background: var(--cor-fundo);
+            border-radius: 50% 50% 0 0 / 42% 42% 0 0;
         }
         #home.active { /* Para que o display flex funcione quando a home está ativa */
             display: flex;
@@ -229,46 +248,178 @@
             justify-content: center;
         }
         #home .container {
-            max-width: 800px;
+            max-width: 1160px;
+            position: relative;
+            z-index: 1;
         }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+            align-items: center;
+            gap: 54px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            color: #fff7f2;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
         #home h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
+            font-size: clamp(2.7rem, 6vw, 4.8rem);
+            line-height: 1.05;
+            margin-bottom: 1.25rem;
             color: var(--cor-secundaria);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 18px 40px rgba(0,0,0,0.34);
         }
         #home p {
-            font-size: 1.3rem;
-            max-width: 700px;
-            margin: 0 auto 2.5rem auto;
+            font-size: 1.18rem;
+            max-width: 620px;
+            margin: 0 0 1.5rem 0;
             line-height: 1.8;
         }
-        #home button {
-            padding: 15px 35px;
-            font-size: 1.1rem;
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 26px;
+        }
+
+        .hero-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin: 4px 0 24px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 18px 28px 28px 18px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px);
+            font-size: 0.92rem;
+        }
+
+        .hero-note::before {
+            content: "";
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 50% 50%, transparent 38%, #fff 40%, #fff 52%, transparent 54%),
+                linear-gradient(135deg, var(--cor-destaque), #f6dfb8);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+        }
+
+        .button-secondary {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.32);
+            color: #fff;
+            box-shadow: none;
+        }
+
+        .button-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            max-width: 620px;
+        }
+
+        .hero-stat {
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 22px;
+            background: rgba(255,255,255,0.11);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-stat strong {
+            display: block;
+            color: #fff;
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+
+        .hero-stat span {
+            color: rgba(255,255,255,0.82);
+            font-size: 0.84rem;
+        }
+
+        .appointment-panel {
+            background: rgba(255,255,255,0.92);
+            color: var(--cor-texto-escuro);
+            border: 1px solid rgba(255,255,255,0.58);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 26px 80px rgba(0,0,0,0.32);
+            backdrop-filter: blur(18px);
+            transform: translateY(8px);
+        }
+
+        .appointment-panel h2 {
+            font-size: 1.45rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .appointment-panel p {
+            color: #5f5f5f;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 1rem;
+        }
+
+        .appointment-panel .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .appointment-panel button[type="submit"] {
+            width: 100%;
+            padding: 13px 18px;
+        }
+
+        .appointment-panel small {
+            display: block;
+            margin-top: 6px;
+            color: #666;
         }
 
         /* Produtos */
         #produtos .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
+            gap: 24px;
             margin-top: 2rem;
         }
 
         .product-card {
             background-color: var(--cor-secundaria);
             border: 1px solid var(--cor-borda-sutil);
-            border-radius: 8px;
+            border-radius: 26px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 16px 38px rgba(57, 8, 4, 0.09);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
             box-shadow: var(--sombra-hover-leve);
         }
 
@@ -279,7 +430,7 @@
         }
 
         .product-card .content {
-            padding: 20px;
+            padding: 22px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -293,13 +444,13 @@
         .product-card .price {
             font-size: 1.3rem;
             font-weight: 700;
-            color: var(--cor-principal);
+            color: var(--cor-principal-2);
             margin-top: auto;
             padding-top: 10px;
         }
         .product-card p {
             font-size: 0.9rem;
-            color: #666;
+            color: var(--cor-texto-suave);
             margin-bottom: 1rem;
             flex-grow: 1;
         }
@@ -308,6 +459,26 @@
         #agendamento .container,
         #contato .container {
             max-width: 700px; /* Limita a largura do formulário e conteúdo de contato */
+        }
+
+        #agendamento {
+            background:
+                linear-gradient(135deg, rgba(57, 8, 4, 0.05), rgba(200, 155, 85, 0.12));
+        }
+
+        .schedule-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .schedule-summary div {
+            border: 1px solid var(--cor-borda-sutil);
+            border-radius: 24px;
+            padding: 22px;
+            background: rgba(255,255,255,0.78);
+            box-shadow: 0 12px 34px rgba(57, 8, 4, 0.08);
         }
         .form-group {
             margin-bottom: 1.5rem;
@@ -325,19 +496,22 @@
         .form-group input[type="email"],
         .form-group input[type="date"],
         .form-group input[type="time"],
+        .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 1px solid var(--cor-borda-sutil);
-            border-radius: 6px;
+            padding: 13px 14px;
+            border: 1px solid rgba(57, 8, 4, 0.14);
+            border-radius: 16px;
             font-size: 1rem;
             font-family: 'Montserrat', sans-serif;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(255,255,255,0.86);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none;
-            border-color: var(--cor-principal);
-            box-shadow: 0 0 0 3px rgba(57, 8, 4, 0.15);
+            border-color: var(--cor-destaque);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(200, 155, 85, 0.2);
         }
         .form-group input::placeholder,
         .form-group textarea::placeholder {
@@ -353,8 +527,8 @@
 
         #availability-message, #contact-message {
             margin-top: 1rem;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px 14px;
+            border-radius: 16px;
             font-weight: bold;
             display: none;
         }
@@ -368,15 +542,22 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .notice {
+            background-color: #fff8e1;
+            color: #6f4e00;
+            border: 1px solid #ffe08a;
+        }
 
         #contato .contact-info-wrapper {
             margin-top: 2rem;
         }
         #contato .contact-info {
             padding: 30px;
-            background-color: #fdf6f6;
-            border-left: 5px solid var(--cor-principal);
-            border-radius: 0 8px 8px 0;
+            background-color: rgba(255,255,255,0.78);
+            border: 1px solid var(--cor-borda-sutil);
+            border-left: 5px solid var(--cor-destaque);
+            border-radius: 24px;
+            box-shadow: 0 14px 36px rgba(57, 8, 4, 0.08);
         }
         #contato .contact-info p {
             margin-bottom: 0.8rem;
@@ -389,7 +570,7 @@
             margin-top: 2rem;
             width: 100%;
             height: 400px;
-            border-radius: 8px;
+            border-radius: 26px;
             overflow: hidden;
             box-shadow: var(--sombra-padrao);
         }
@@ -401,7 +582,7 @@
 
         /* Footer */
         footer {
-            background-color: var(--cor-principal);
+            background: linear-gradient(135deg, #2a0503, var(--cor-principal));
             color: var(--cor-texto-claro);
             text-align: center;
             padding: 2rem 0;
@@ -465,8 +646,32 @@
                 font-weight: 600;
             }
 
-            #home h1 { font-size: 2.8rem; }
-            #home p { font-size: 1.1rem; }
+            #home {
+                padding: 42px 0 34px;
+                min-height: auto;
+            }
+
+            .hero-layout {
+                grid-template-columns: 1fr;
+                gap: 26px;
+            }
+
+            #home h1 {
+                font-size: 2.45rem;
+            }
+
+            #home p {
+                font-size: 1rem;
+            }
+
+            .hero-stats,
+            .schedule-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .appointment-panel {
+                padding: 18px;
+            }
 
             .page-section { padding: 40px 0; } /* Reduzir padding vertical em mobile */
 
@@ -519,9 +724,58 @@
     <main>
         <section id="home" class="page-section">
             <div class="container">
-                <h1>Bem-vindo à Otica Prime</h1>
-                <p>Sua visão em primeiro lugar, com estilo e qualidade em Parintins.</p>
-                <button onclick="navigateToSection('#produtos')">Ver Produtos</button>
+                <div class="hero-layout">
+                    <div class="hero-copy">
+                        <span class="eyebrow">Ótica em Parintins</span>
+                        <h1>O cuidado com a sua visão começa aqui.</h1>
+                        <p>Agende sua consulta, conheça armações selecionadas e conte com atendimento próximo para encontrar a melhor solução para o seu dia a dia.</p>
+                        <div class="hero-note">Atendimento com confirmação pelo contato informado no agendamento.</div>
+                        <div class="hero-actions">
+                            <button onclick="document.getElementById('nome').focus()">Agendar agora</button>
+                            <button class="button-secondary" onclick="navigateToSection('#produtos')">Ver produtos</button>
+                        </div>
+                        <div class="hero-stats" aria-label="Destaques da Otica Prime">
+                            <div class="hero-stat">
+                                <strong>Consulta rápida</strong>
+                                <span>Horários em intervalos de 30 minutos</span>
+                            </div>
+                            <div class="hero-stat">
+                                <strong>Seg-Sáb</strong>
+                                <span>Atendimento em horário comercial</span>
+                            </div>
+                            <div class="hero-stat">
+                                <strong>WhatsApp</strong>
+                                <span>Contato direto para confirmação</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="appointment-panel" aria-label="Formulário de agendamento">
+                        <h2>Agende sua consulta</h2>
+                        <p>Escolha uma data e horário disponível. Se houver conflito, o sistema avisa antes de enviar.</p>
+                        <form id="appointmentForm">
+                            <div class="form-group">
+                                <label for="nome">Nome completo</label>
+                                <input type="text" id="nome" name="nome" autocomplete="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contatoTel">Telefone/WhatsApp</label>
+                                <input type="tel" id="contatoTel" name="contatoTel" pattern="[0-9]{10,11}" placeholder="Ex: 92999998888" autocomplete="tel" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="data">Data</label>
+                                <input type="date" id="data" name="data" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hora">Horário</label>
+                                <input type="time" id="hora" name="hora" required min="08:00" max="18:00" step="1800">
+                                <small>Seg-Sex: 08:00-12:00 e 14:00-18:00. Sábado: 08:00-12:00.</small>
+                            </div>
+                            <button type="submit">Confirmar horário</button>
+                        </form>
+                        <div id="availability-message"></div>
+                    </aside>
+                </div>
             </div>
         </section>
 
@@ -537,31 +791,19 @@
 
         <section id="agendamento" class="page-section">
             <div class="container">
-                <h2>Agende sua Consulta</h2>
-                <p>Verifique os horários disponíveis e agende sua consulta ou exame de vista conosco.</p>
-                <p><strong>Horário de Funcionamento:</strong> Segunda a Sexta: 08:00 - 12:00 e 14:00 - 18:00. Sábado: 08:00 - 12:00.</p>
-                
-                <form id="appointmentForm">
-                    <div class="form-group">
-                        <label for="nome">Nome Completo:</label>
-                        <input type="text" id="nome" name="nome" required>
+                <h2>Agendamento</h2>
+                <p>O formulário principal agora fica logo no início do site para facilitar o acesso. Use o botão abaixo para voltar ao agendamento.</p>
+                <div class="schedule-summary">
+                    <div>
+                        <h3>Segunda a sexta</h3>
+                        <p>08:00 - 12:00<br>14:00 - 18:00</p>
                     </div>
-                    <div class="form-group">
-                        <label for="contatoTel">Telefone/WhatsApp (com DDD):</label>
-                        <input type="tel" id="contatoTel" name="contatoTel" pattern="[0-9]{10,11}" placeholder="Ex: 92999998888" required>
+                    <div>
+                        <h3>Sábado</h3>
+                        <p>08:00 - 12:00</p>
                     </div>
-                    <div class="form-group">
-                        <label for="data">Data da Consulta:</label>
-                        <input type="date" id="data" name="data" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="hora">Horário:</label>
-                        <input type="time" id="hora" name="hora" required min="08:00" max="18:00" step="1800">
-                        <small>Intervalos de 30 minutos. Verifique o horário de funcionamento.</small>
-                    </div>
-                    <button type="submit">Verificar Disponibilidade e Agendar</button>
-                </form>
-                <div id="availability-message"></div>
+                </div>
+                <button onclick="navigateToSection('#home'); setTimeout(() => document.getElementById('nome').focus(), 100);">Ir para o formulário</button>
             </div>
         </section>
 
@@ -610,6 +852,10 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
+        const APP_ROOT = 'Prime';
+        const appRef = (path = '') => db.ref(path ? `${APP_ROOT}/${path}` : APP_ROOT);
+        const DEFAULT_ALERT_EMAIL = 'oticaprime3@gmail.com';
+        const DEFAULT_GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9YHPAOoCpbAzp5RXYG9Owi-8-Cb-M6SujC0XRFEnzvtNP_UHlVGutGJ2qKCzBg0HS/exec';
 
         let productsDataLoaded = false;
         let contactDataLoaded = false;
@@ -703,7 +949,7 @@
             if(contactLoaderElem) contactLoaderElem.style.display = 'block';
             if(contactInfoContainer) contactInfoContainer.style.display = 'none';
 
-            db.ref('informacoesContato').once('value')
+            appRef('informacoesContato').once('value')
                 .then(snapshot => {
                     if(contactLoaderElem) contactLoaderElem.style.display = 'none';
                     if(contactInfoContainer) contactInfoContainer.style.display = 'block';
@@ -743,7 +989,7 @@
             if(productLoader) productLoader.style.display = 'block';
             productGrid.innerHTML = '';
 
-            db.ref('produtos').once('value')
+            appRef('produtos').once('value')
                 .then(snapshot => {
                     if(productLoader) productLoader.style.display = 'none';
                     if (snapshot.exists()) {
@@ -839,7 +1085,7 @@
 
                 const dataHoraCombinada = `${data}T${hora}`;
 
-                db.ref('agendamentos')
+                appRef('agendamentos')
                   .orderByChild('data_hora_combinada')
                   .equalTo(dataHoraCombinada)
                   .once('value')
@@ -856,7 +1102,8 @@
                               timestamp: firebase.database.ServerValue.TIMESTAMP
                           };
 
-                          db.ref('agendamentos').push(novoAgendamento)
+                          appRef('agendamentos').push(novoAgendamento)
+                              .then(() => notifyNewAppointment(novoAgendamento))
                               .then(() => {
                                   showMessage('Agendamento realizado com sucesso! Entraremos em contato para confirmar.', 'success');
                                   appointmentForm.reset();
@@ -880,6 +1127,43 @@
                 availabilityMessage.className = type; // 'success' ou 'error'
                 availabilityMessage.style.display = message ? 'block' : 'none';
             }
+        }
+
+        async function notifyNewAppointment(appointment) {
+            try {
+                const snapshot = await appRef('configuracoes/notificacoesEmail').once('value');
+                const config = snapshot.val();
+
+                const destinatario = config && config.destinatario ? config.destinatario : DEFAULT_ALERT_EMAIL;
+                const webhookUrl = config && config.googleScriptUrl ? config.googleScriptUrl : DEFAULT_GOOGLE_SCRIPT_URL;
+
+                if (!config || !config.ativo || !webhookUrl || !destinatario) {
+                    console.info('Notificação por e-mail não configurada.');
+                    return;
+                }
+
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        destinatario,
+                        nome: appointment.nome,
+                        contato: appointment.contato,
+                        data: formatDateBR(appointment.data),
+                        hora: appointment.hora,
+                        origem: 'Site Otica Prime'
+                    })
+                });
+            } catch (error) {
+                console.warn('Agendamento salvo, mas o e-mail de notificação não foi enviado:', error);
+            }
+        }
+
+        function formatDateBR(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateString;
         }
 
         // --- INICIALIZAÇÃO ---
