@@ -206,6 +206,16 @@
             padding: 5px 8px;
             font-size: 0.8rem;
         }
+        td .actions a.button-whatsapp {
+            display: inline-block;
+            margin-right: 5px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            background: #25d366;
+            color: #fff;
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
 
         /* Mensagens de Feedback */
         .message {
@@ -355,11 +365,11 @@
                         </div>
                         <div class="form-group">
                             <label for="adminAppointmentTime">Horário:</label>
-                            <input type="time" id="adminAppointmentTime" min="08:00" max="18:00" step="1800" required>
+                            <input type="time" id="adminAppointmentTime" step="1800" required>
                         </div>
                     </div>
-                    <button type="submit">Checar conflito e agendar</button>
-                    <p class="muted">O sistema bloqueia domingo, horários fora do expediente e horários já cadastrados.</p>
+                    <button type="submit">Registrar solicitação</button>
+                    <p class="muted">O sistema avisa sobre conflito de horario, mas permite registrar solicitacoes flexiveis para a administradora aprovar.</p>
                 </form>
             </div>
             <div id="appointmentsLoader" class="loader" style="display:none;"></div>
@@ -370,6 +380,7 @@
                         <th>Hora</th>
                         <th>Nome</th>
                         <th>Contato</th>
+                        <th>Status</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -402,6 +413,10 @@
                 <div class="form-group">
                     <label for="contactHoursSat">Horário Sábado (ex: 08:00-12:00):</label>
                     <input type="text" id="contactHoursSat" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentText">Texto exibido no agendamento:</label>
+                    <textarea id="appointmentText" placeholder="Ex: Atendimento das 9h as 19h. Horarios flexiveis podem ser solicitados e serao confirmados pela administradora."></textarea>
                 </div>
                  <div class="form-group">
                     <label for="contactMapURL">URL do Google Maps Embed (iframe src):</label>
@@ -511,6 +526,7 @@
         const contactEmailInput = document.getElementById('contactEmail');
         const contactHoursWeekInput = document.getElementById('contactHoursWeek');
         const contactHoursSatInput = document.getElementById('contactHoursSat');
+        const appointmentTextInput = document.getElementById('appointmentText');
         const contactMapURLInput = document.getElementById('contactMapURL');
 
         // Elementos Configurações
@@ -833,36 +849,12 @@
 
 
         // --- VER AGENDAMENTOS ---
-        const horariosFuncionamento = {
-            semana: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "14:00", fimTarde: "18:00" },
-            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" }
-        };
-
-        function timeToMinutes(timeStr) {
-            const [h, m] = timeStr.split(':').map(Number);
-            return h * 60 + m;
-        }
-
-        function isValidTime(date, time) {
-            const dayOfWeek = new Date(date + 'T00:00:00').getUTCDay();
-            const [hour, minute] = time.split(':').map(Number);
-
-            let operatingHours;
-            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos domingos." };
-            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado;
-            else operatingHours = horariosFuncionamento.semana;
-
-            const selectedTime = hour * 60 + minute;
-            const isInMorningShift = selectedTime >= timeToMinutes(operatingHours.inicioManha) && selectedTime < timeToMinutes(operatingHours.fimManha);
-            const isInAfternoonShift = selectedTime >= timeToMinutes(operatingHours.inicioTarde) && selectedTime < timeToMinutes(operatingHours.fimTarde);
-
-            if (!(isInMorningShift || isInAfternoonShift)) {
-                return { valid: false, message: "Horário fora do funcionamento." };
-            }
+        function getTimeNotice(time) {
+            const [, minute] = time.split(':').map(Number);
             if (minute % 30 !== 0) {
-                return { valid: false, message: "Use intervalos de 30 minutos." };
+                return "Use preferencialmente intervalos de 30 minutos.";
             }
-            return { valid: true };
+            return "";
         }
 
         async function appointmentHasConflict(data, hora) {
@@ -888,17 +880,8 @@
                     return;
                 }
 
-                const timeValidation = isValidTime(data, hora);
-                if (!timeValidation.valid) {
-                    showGeralMessage(timeValidation.message, 'error');
-                    return;
-                }
-
                 try {
-                    if (await appointmentHasConflict(data, hora)) {
-                        showGeralMessage('Já existe agendamento nesse horário. Escolha outro.', 'error');
-                        return;
-                    }
+                    const hasConflict = await appointmentHasConflict(data, hora);
 
                     await appRef('agendamentos').push({
                         nome: adminAppointmentNameInput.value,
@@ -906,11 +889,17 @@
                         data,
                         hora,
                         data_hora_combinada: `${data}T${hora}`,
+                        conflitoHorario: hasConflict,
+                        status: 'solicitado',
                         origem: 'admin',
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
 
-                    showGeralMessage('Agendamento criado com sucesso!', 'success');
+                    const timeNotice = getTimeNotice(hora);
+                    const notices = [];
+                    if (hasConflict) notices.push('Ja havia outro registro nesse horario.');
+                    if (timeNotice) notices.push(timeNotice);
+                    showGeralMessage(`Agendamento criado com sucesso!${notices.length ? ' ' + notices.join(' ') : ''}`, 'success');
                     adminAppointmentForm.reset();
                     loadAppointmentsAdmin();
                 } catch (err) {
@@ -946,20 +935,23 @@
                                    formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
                                 }
                             } catch(e) { console.warn("Erro formatando data do agendamento", e); }
+                            const whatsappUrl = buildWhatsAppUrl(app, formattedDate);
 
                             row.innerHTML = `
                                 <td data-label="Data">${formattedDate}</td>
                                 <td data-label="Hora">${app.hora}</td>
                                 <td data-label="Nome">${app.nome}</td>
                                 <td data-label="Contato">${app.contato}</td>
+                                <td data-label="Status">${formatAppointmentStatus(app)}</td>
                                 <td data-label="Ações" class="actions">
+                                    ${whatsappUrl ? `<a class="button-whatsapp" href="${whatsappUrl}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
                                     <button class="danger" onclick="deleteAppointment('${app.key}', '${app.nome} em ${formattedDate} ${app.hora}')">Excluir</button>
                                     <!-- Poderia adicionar "Confirmar", "Concluir" etc -->
                                 </td>
                             `;
                         });
                     } else {
-                        appointmentsTableBody.innerHTML = '<tr><td colspan="5">Nenhum agendamento encontrado.</td></tr>';
+                        appointmentsTableBody.innerHTML = '<tr><td colspan="6">Nenhum agendamento encontrado.</td></tr>';
                     }
                 }, err => {
                     appointmentsLoader.style.display = 'none';
@@ -968,6 +960,23 @@
                         : '';
                     showGeralMessage('Erro ao carregar agendamentos: ' + (err.message || err) + detail, 'error');
                 });
+        }
+
+        function formatAppointmentStatus(app) {
+            const parts = [];
+            parts.push(app.status || 'solicitado');
+            parts.push(app.origem === 'admin' ? 'Admin' : 'Site');
+            if (app.conflitoHorario) parts.push('conflito');
+            if (app.emailNotificacao) parts.push(`e-mail: ${app.emailNotificacao}`);
+            return parts.join(' | ');
+        }
+
+        function buildWhatsAppUrl(app, formattedDate) {
+            const digits = String(app.contato || '').replace(/\D/g, '');
+            if (!digits) return '';
+            const phone = digits.length <= 11 ? `55${digits}` : digits;
+            const message = `Ola, ${app.nome || ''}! Aqui e da Otica Prime. Recebemos sua solicitacao de agendamento para ${formattedDate} as ${app.hora || ''}. Podemos confirmar esse horario?`;
+            return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         }
         
         window.deleteAppointment = (key, appointmentDetails) => {
@@ -994,6 +1003,7 @@
                         contactEmailInput.value = info.email || '';
                         contactHoursWeekInput.value = info.horarioSegSex || '';
                         contactHoursSatInput.value = info.horarioSab || '';
+                        appointmentTextInput.value = info.textoAgendamento || '';
                         contactMapURLInput.value = info.mapaUrl || '';
                     }
                 })
@@ -1008,6 +1018,7 @@
                 email: contactEmailInput.value,
                 horarioSegSex: contactHoursWeekInput.value,
                 horarioSab: contactHoursSatInput.value,
+                textoAgendamento: appointmentTextInput.value,
                 mapaUrl: contactMapURLInput.value
             };
 
@@ -1053,18 +1064,28 @@
             testEmailBtn.addEventListener('click', async () => {
                 const webhookUrl = googleScriptUrlInput.value.trim();
                 const destinatario = emailRecipientInput.value.trim();
+                if (!emailNotificationsActiveInput.checked) {
+                    showGeralMessage('Marque "Ativar envio de e-mail" e salve a configuração antes de testar.', 'error');
+                    return;
+                }
                 if (!webhookUrl || !destinatario) {
                     showGeralMessage('Informe a URL do Apps Script e o e-mail destinatário.', 'error');
                     return;
                 }
                 try {
+                    await appRef('configuracoes/notificacoesEmail').set({
+                        ativo: true,
+                        googleScriptUrl: webhookUrl,
+                        destinatario,
+                        atualizadoEm: firebase.database.ServerValue.TIMESTAMP
+                    });
                     await fetch(webhookUrl, {
                         method: 'POST',
                         mode: 'no-cors',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ destinatario, nome: 'Teste do painel', contato: '-', data: '-', hora: '-', origem: 'Teste Otica Prime' })
                     });
-                    showGeralMessage('Teste enviado. Verifique a caixa de entrada e o spam.', 'success');
+                    showGeralMessage('Configuracao salva e teste enviado. Verifique a caixa de entrada e o spam.', 'success');
                 } catch (err) {
                     showGeralMessage('Não foi possível chamar o Apps Script: ' + err.message, 'error');
                 }

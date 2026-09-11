@@ -1,41 +1,116 @@
 const ALLOWED_DESTINATION = 'oticaprime3@gmail.com';
+const SENDER_NAME = 'Otica Prime';
 
 function enviarEmailTeste() {
-  GmailApp.sendEmail(ALLOWED_DESTINATION, 'Teste de alerta - Otica Prime', 'Se voce recebeu este e-mail, o envio pelo Google Apps Script esta autorizado.');
+  GmailApp.sendEmail(
+    ALLOWED_DESTINATION,
+    'Teste de alerta - Otica Prime',
+    'Se voce recebeu este e-mail, o envio pelo Google Apps Script esta autorizado.',
+    { name: SENDER_NAME }
+  );
+}
+
+function testarDoPostAgendamento() {
+  return doPost({
+    postData: {
+      contents: JSON.stringify({
+        destinatario: ALLOWED_DESTINATION,
+        nome: 'Teste pelo editor',
+        contato: '92999998888',
+        data: '11/09/2026',
+        hora: '15:30',
+        origem: 'Teste Apps Script'
+      })
+    }
+  });
 }
 
 function doGet() {
-  return jsonResponse({ ok: true, service: 'Otica Prime email webhook' });
+  return jsonResponse({
+    ok: true,
+    service: 'Otica Prime email webhook',
+    message: 'Webhook ativo. Use POST para enviar notificacoes de agendamento.'
+  });
 }
 
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents || '{}');
-    const recipient = data.destinatario || ALLOWED_DESTINATION;
+    const data = parseRequestBody(e);
+    console.log('Payload recebido: ' + JSON.stringify(data));
 
-    if (recipient !== ALLOWED_DESTINATION) {
-      throw new Error('Destinatario nao permitido.');
+    const recipient = normalizeEmail(data.destinatario || ALLOWED_DESTINATION);
+    const allowedRecipient = normalizeEmail(ALLOWED_DESTINATION);
+
+    if (recipient !== allowedRecipient) {
+      throw new Error('Destinatario nao permitido: ' + recipient);
     }
 
-    const subject = 'Novo agendamento solicitado - Otica Prime';
-    const body = [
-      'Um novo agendamento foi solicitado pelo site.',
-      '',
-      `Nome: ${data.nome || 'Nao informado'}`,
-      `Contato: ${data.contato || 'Nao informado'}`,
-      `Data: ${data.data || 'Nao informada'}`,
-      `Hora: ${data.hora || 'Nao informada'}`,
-      `Origem: ${data.origem || 'Site Otica Prime'}`
-    ].join('\n');
+    const subject = getSubject(data);
+    const body = buildEmailBody(data);
 
     GmailApp.sendEmail(recipient, subject, body, {
-      name: 'Otica Prime'
+      name: SENDER_NAME,
+      replyTo: recipient
     });
 
-    return jsonResponse({ ok: true });
+    console.log('E-mail enviado para: ' + recipient);
+    return jsonResponse({
+      ok: true,
+      sent: true,
+      recipient: recipient,
+      subject: subject
+    });
   } catch (error) {
-    return jsonResponse({ ok: false, error: error.message });
+    console.error('Erro ao enviar e-mail: ' + error.message);
+    return jsonResponse({
+      ok: false,
+      sent: false,
+      error: error.message
+    });
   }
+}
+
+function parseRequestBody(e) {
+  if (!e || !e.postData || !e.postData.contents) {
+    throw new Error('Requisicao sem corpo.');
+  }
+
+  try {
+    return JSON.parse(e.postData.contents);
+  } catch (error) {
+    throw new Error('JSON invalido: ' + error.message);
+  }
+}
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function getSubject(data) {
+  if (String(data.origem || '').toLowerCase().indexOf('teste') !== -1) {
+    return 'Teste de alerta - Otica Prime';
+  }
+
+  return 'Novo agendamento solicitado - Otica Prime';
+}
+
+function buildEmailBody(data) {
+  return [
+    'Um novo agendamento foi solicitado pelo site.',
+    '',
+    'Nome: ' + safeValue(data.nome, 'Nao informado'),
+    'Contato: ' + safeValue(data.contato, 'Nao informado'),
+    'Data: ' + safeValue(data.data, 'Nao informada'),
+    'Hora: ' + safeValue(data.hora, 'Nao informada'),
+    'Origem: ' + safeValue(data.origem, 'Site Otica Prime'),
+    '',
+    'Acesse o painel administrativo para verificar conflitos e confirmar o atendimento.'
+  ].join('\n');
+}
+
+function safeValue(value, fallback) {
+  const text = String(value || '').trim();
+  return text || fallback;
 }
 
 function jsonResponse(payload) {

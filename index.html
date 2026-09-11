@@ -752,7 +752,7 @@
 
                     <aside class="appointment-panel" aria-label="Formulário de agendamento">
                         <h2>Agende sua consulta</h2>
-                        <p>Escolha uma data e horário disponível. Se houver conflito, o sistema avisa antes de enviar.</p>
+                        <p>Solicite uma data e horario. A administradora confirma pelo contato informado.</p>
                         <form id="appointmentForm">
                             <div class="form-group">
                                 <label for="nome">Nome completo</label>
@@ -768,8 +768,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="hora">Horário</label>
-                                <input type="time" id="hora" name="hora" required min="08:00" max="18:00" step="1800">
-                                <small>Seg-Sex: 08:00-12:00 e 14:00-18:00. Sábado: 08:00-12:00.</small>
+                                <input type="time" id="hora" name="hora" required step="1800">
+                                <small id="appointmentHoursHint">Atendimento sugerido: 09:00 as 19:00. Horarios flexiveis podem ser solicitados.</small>
                             </div>
                             <button type="submit">Confirmar horário</button>
                         </form>
@@ -793,14 +793,14 @@
             <div class="container">
                 <h2>Agendamento</h2>
                 <p>O formulário principal agora fica logo no início do site para facilitar o acesso. Use o botão abaixo para voltar ao agendamento.</p>
-                <div class="schedule-summary">
+                <div class="schedule-summary" id="scheduleSummary">
                     <div>
                         <h3>Segunda a sexta</h3>
-                        <p>08:00 - 12:00<br>14:00 - 18:00</p>
+                        <p>09:00 - 19:00</p>
                     </div>
                     <div>
                         <h3>Sábado</h3>
-                        <p>08:00 - 12:00</p>
+                        <p>Horario flexivel sob confirmacao</p>
                     </div>
                 </div>
                 <button onclick="navigateToSection('#home'); setTimeout(() => document.getElementById('nome').focus(), 100);">Ir para o formulário</button>
@@ -869,6 +869,8 @@
         const mapContainer = document.getElementById('map-container');
         const appointmentForm = document.getElementById('appointmentForm');
         const availabilityMessage = document.getElementById('availability-message');
+        const appointmentHoursHint = document.getElementById('appointmentHoursHint');
+        const scheduleSummary = document.getElementById('scheduleSummary');
 
         const hamburgerButton = document.querySelector('.hamburger-menu');
         const mainNav = document.getElementById('main-nav');
@@ -964,6 +966,20 @@
                                 Sábado: ${info.horarioSab || 'Não informado'}
                             </p>
                         `;
+                        const appointmentText = info.textoAgendamento || `Atendimento sugerido: ${info.horarioSegSex || '09:00 as 19:00'}. Horarios flexiveis podem ser solicitados e serao confirmados pela administradora.`;
+                        if (appointmentHoursHint) appointmentHoursHint.textContent = appointmentText;
+                        if (scheduleSummary) {
+                            scheduleSummary.innerHTML = `
+                                <div>
+                                    <h3>Funcionamento</h3>
+                                    <p>${info.horarioSegSex || '09:00 as 19:00'}</p>
+                                </div>
+                                <div>
+                                    <h3>Observacao</h3>
+                                    <p>${info.textoAgendamento || 'Horarios flexiveis podem ser solicitados. A administradora confirma cada agendamento.'}</p>
+                                </div>
+                            `;
+                        }
                         if (info.mapaUrl && mapContainer) {
                             mapContainer.innerHTML = `<iframe src="${info.mapaUrl}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
                         } else if (mapContainer) {
@@ -1021,41 +1037,12 @@
         }
         
         // --- AGENDAMENTO ---
-        const horariosFuncionamento = {
-            semana: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "14:00", fimTarde: "18:00" },
-            sabado: { inicioManha: "08:00", fimManha: "12:00", inicioTarde: "12:00", fimTarde: "12:00" }
-        };
-
-        function isValidTime(date, time) {
-            const dayOfWeek = new Date(date + 'T00:00:00').getUTCDay();
-            const [hour, minute] = time.split(':').map(Number);
-
-            let operatingHours;
-            if (dayOfWeek === 0) return { valid: false, message: "Não funcionamos aos Domingos." };
-            if (dayOfWeek === 6) operatingHours = horariosFuncionamento.sabado;
-            else operatingHours = horariosFuncionamento.semana;
-
-            const selectedTime = hour * 60 + minute;
-            const inicioManha = timeToMinutes(operatingHours.inicioManha);
-            const fimManha = timeToMinutes(operatingHours.fimManha);
-            const inicioTarde = timeToMinutes(operatingHours.inicioTarde);
-            const fimTarde = timeToMinutes(operatingHours.fimTarde);
-
-            const isInMorningShift = selectedTime >= inicioManha && selectedTime < fimManha;
-            const isInAfternoonShift = selectedTime >= inicioTarde && selectedTime < fimTarde;
-            
-            if (!(isInMorningShift || isInAfternoonShift)) {
-                 return { valid: false, message: `Horário fora do funcionamento. (${dayOfWeek === 6 ? 'Sábado: '+ operatingHours.inicioManha + '-' + operatingHours.fimManha : 'Seg-Sex: '+ operatingHours.inicioManha + '-' + operatingHours.fimManha + ' e ' + operatingHours.inicioTarde + '-' + operatingHours.fimTarde}).` };
-            }
+        function getTimeNotice(time) {
+            const [, minute] = time.split(':').map(Number);
             if (minute % 30 !== 0) {
-                return { valid: false, message: "Por favor, escolha horários cheios ou de meia em meia hora (ex: 08:00, 08:30)." };
+                return "Para facilitar a agenda, prefira horarios de meia em meia hora.";
             }
-            return { valid: true };
-        }
-
-        function timeToMinutes(timeStr) {
-            const [h, m] = timeStr.split(':').map(Number);
-            return h * 60 + m;
+            return "";
         }
 
         if (appointmentForm) {
@@ -1077,42 +1064,51 @@
                     return;
                 }
 
-                const timeValidation = isValidTime(data, hora);
-                if (!timeValidation.valid) {
-                    showMessage(timeValidation.message, 'error');
-                    return;
-                }
-
                 const dataHoraCombinada = `${data}T${hora}`;
+                const timeNotice = getTimeNotice(hora);
 
                 appRef('agendamentos')
                   .orderByChild('data_hora_combinada')
                   .equalTo(dataHoraCombinada)
                   .once('value')
                   .then(snapshot => {
-                      if (snapshot.exists()) {
-                          showMessage('Este horário já está agendado. Por favor, escolha outro.', 'error');
-                      } else {
-                          const novoAgendamento = {
-                              nome: nome,
-                              contato: contatoTel,
-                              data: data,
-                              hora: hora,
-                              data_hora_combinada: dataHoraCombinada,
-                              timestamp: firebase.database.ServerValue.TIMESTAMP
-                          };
+                      const hasConflict = snapshot.exists();
+                      const novoAgendamento = {
+                          nome: nome,
+                          contato: contatoTel,
+                          data: data,
+                          hora: hora,
+                          data_hora_combinada: dataHoraCombinada,
+                          conflitoHorario: hasConflict,
+                          status: 'solicitado',
+                          origem: 'site',
+                          timestamp: firebase.database.ServerValue.TIMESTAMP
+                      };
 
-                          appRef('agendamentos').push(novoAgendamento)
-                              .then(() => notifyNewAppointment(novoAgendamento))
-                              .then(() => {
-                                  showMessage('Agendamento realizado com sucesso! Entraremos em contato para confirmar.', 'success');
-                                  appointmentForm.reset();
-                              })
-                              .catch(error => {
-                                  console.error("Erro ao salvar agendamento: ", error);
-                                  showMessage('Erro ao realizar agendamento. Tente novamente.', 'error');
-                              });
-                      }
+                      return appRef('agendamentos').push(novoAgendamento)
+                          .then(ref => notifyNewAppointment(novoAgendamento)
+                              .then(result => ref.update({
+                                  emailNotificacao: result.ok ? 'enviado' : 'erro',
+                                  emailNotificacaoDetalhe: result.message || '',
+                                  emailNotificacaoEm: firebase.database.ServerValue.TIMESTAMP
+                              }))
+                              .catch(error => ref.update({
+                                  emailNotificacao: 'erro',
+                                  emailNotificacaoDetalhe: error.message || String(error),
+                                  emailNotificacaoEm: firebase.database.ServerValue.TIMESTAMP
+                              }))
+                          )
+                          .then(() => {
+                              const notices = [];
+                              if (hasConflict) notices.push('Ja existe uma solicitacao nesse mesmo horario; a administradora vai avaliar alternativas.');
+                              if (timeNotice) notices.push(timeNotice);
+                              showMessage(`Agendamento solicitado com sucesso! Entraremos em contato para confirmar.${notices.length ? ' ' + notices.join(' ') : ''}`, 'success');
+                              appointmentForm.reset();
+                          })
+                          .catch(error => {
+                              console.error("Erro ao salvar agendamento: ", error);
+                              showMessage('Erro ao realizar agendamento. Tente novamente.', 'error');
+                          });
                   })
                   .catch(error => {
                       console.error("Erro ao verificar disponibilidade: ", error);
@@ -1139,7 +1135,7 @@
 
                 if (!config || !config.ativo || !webhookUrl || !destinatario) {
                     console.info('Notificação por e-mail não configurada.');
-                    return;
+                    return { ok: false, message: 'Notificacao por e-mail nao configurada.' };
                 }
 
                 await fetch(webhookUrl, {
@@ -1155,8 +1151,10 @@
                         origem: 'Site Otica Prime'
                     })
                 });
+                return { ok: true, message: 'Webhook chamado em modo no-cors.' };
             } catch (error) {
                 console.warn('Agendamento salvo, mas o e-mail de notificação não foi enviado:', error);
+                return { ok: false, message: error.message || String(error) };
             }
         }
 
